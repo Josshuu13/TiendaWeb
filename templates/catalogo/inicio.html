@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<section class="portada mb-5">
+  <div class="row align-items-center g-4">
+    <div class="col-md-7">
+      <h1 class="display-5 titulo">Diseña su moño y míralo antes de comprarlo</h1>
+      <p class="lead">Moños para niña hechos a mano, con los colores que tú elijas.
+        Completa el look navideño con suéteres y calcetines a juego.</p>
+      <a href="{% url 'catalogo:producto' 'mono-clasico' %}" class="btn btn-tienda btn-lg">Personalizar un moño</a>
+      <a href="{% url 'catalogo:lista' %}" class="btn btn-link">Ver catálogo</a>
+    </div>
+    <div class="col-md-5 text-center">
+      <div class="portada-icono" aria-hidden="true">🎀</div>
+    </div>
+  </div>
+</section>
+
+<h2 class="h4 titulo mb-3">Destacados</h2>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+  {% for producto in destacados %}
+    {% include "catalogo/_tarjeta.html" %}
+  {% empty %}
+    <p class="text-body-secondary">Aún no hay productos. Ejecuta <code>python manage.py cargar_datos_demo</code>.</p>
+  {% endfor %}
+</div>
+{% endblock %}

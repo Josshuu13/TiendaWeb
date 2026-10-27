@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block titulo %}{{ producto.nombre }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta" class="small mb-3">
+  <a href="{% url 'catalogo:lista' %}">Catálogo</a> ›
+  <a href="{{ producto.categoria.get_absolute_url }}">{{ producto.categoria.nombre }}</a> ›
+  <span class="text-body-secondary">{{ producto.nombre }}</span>
+</nav>
+
+<div class="row g-4">
+  <!-- Columna izquierda: foto o simulador -->
+  <div class="col-lg-6">
+    {% if producto.personalizable %}
+      <div id="simulador" class="simulador">
+        <!-- Aquí se montará el canvas con las capas fotográficas (app "personalizador"). -->
+        <div class="simulador-provisional">
+          <div class="muestras-provisionales">
+            {% for parte in partes %}
+              <div class="text-center">
+                <span class="punto-grande" data-muestra="{{ parte.clave }}"
+                      style="background: {{ parte.color_inicial.codigo_hex|default:'#ccc' }}"></span>
+                <div class="small mt-1">{{ parte.nombre }}</div>
+              </div>
+            {% endfor %}
+          </div>
+          <p class="small text-body-secondary mt-3 mb-0">Vista provisional: aquí irá el simulador con fotos reales.</p>
+        </div>
+      </div>
+    {% else %}
+      {% include "catalogo/_imagen.html" with clase="foto-grande" %}
+    {% endif %}
+  </div>
+
+  <!-- Columna derecha: opciones y cotización -->
+  <div class="col-lg-6">
+    <h1 class="h3 titulo">{{ producto.nombre }}</h1>
+    <p>{{ producto.descripcion }}</p>
+    <p class="precio fs-4 mb-3">{% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:2|intcomma }}</p>
+
+    <form id="form-cotizar" data-producto="{{ producto.slug }}"
+          data-url="{% url 'catalogo:api_cotizar' %}" novalidate>
+      {% csrf_token %}
+
+      {% if producto.personalizable %}
+        {% for parte in partes %}
+          <fieldset class="mb-3">
+            <legend class="fs-6 fw-bold">Color de {{ parte.nombre|lower }}</legend>
+            <div class="d-flex flex-wrap gap-2">
+              {% for color in parte.colores.all %}{% if color.activo %}
+                <input type="radio" class="btn-check" name="{{ parte.clave }}" value="{{ color.pk }}"
+                       id="{{ parte.clave }}-{{ color.pk }}" data-hex="{{ color.codigo_hex }}"
+                       {% if color.pk == parte.color_inicial_id %}checked{% endif %}>
+                <label class="muestra" for="{{ parte.clave }}-{{ color.pk }}" title="{{ color.nombre }}"
+                       style="--c: {{ color.codigo_hex }}"><span class="visually-hidden">{{ color.nombre }}</span></label>
+              {% endif %}{% endfor %}
+            </div>
+            <div class="small text-body-secondary mt-1" data-nombre-color="{{ parte.clave }}"></div>
+          </fieldset>
+        {% endfor %}
+
+        <fieldset class="mb-3">
+          <legend class="fs-6 fw-bold">Decoración</legend>
+          <div class="d-flex flex-wrap gap-2">
+            <input type="radio" class="btn-check" name="decoracion" value="" id="deco-ninguna" checked>
+            <label class="btn btn-sm btn-outline-secondary" for="deco-ninguna">Sin decoración</label>
+            {% for d in decoraciones %}
+              <input type="radio" class="btn-check" name="decoracion" value="{{ d.clave }}" id="deco-{{ d.clave }}">
+              <label class="btn btn-sm btn-outline-secondary" for="deco-{{ d.clave }}">{{ d.nombre }} +${{ d.precio_extra|floatformat:0 }}</label>
+            {% endfor %}
+          </div>
+        </fieldset>
+      {% else %}
+        <div class="mb-3">
+          <label for="variante" class="form-label fw-bold">Talla / color</label>
+          <select id="variante" name="variante" class="form-select">
+            {% for v in variantes %}
+              <option value="{{ v.sku }}" {% if v.existencias == 0 %}disabled{% endif %}>
+                {{ v.get_talla_display }}{% if v.color %} · {{ v.color.nombre }}{% endif %}
+                {% if v.precio_extra %} (+${{ v.precio_extra|floatformat:0 }}){% endif %}
+                {% if v.existencias == 0 %} — agotado{% elif v.existencias <= 3 %} — últimas {{ v.existencias }}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <div class="mb-3" style="max-width: 9rem">
+        <label for="cantidad" class="form-label fw-bold">Cantidad</label>
+        <input type="number" id="cantidad" name="cantidad" class="form-control" value="1" min="1" max="50">
+      </div>
+    </form>
+
+    <div class="cotizacion p-3" aria-live="polite">
+      <h2 class="h6 fw-bold">Tu cotización</h2>
+      <div id="cotizacion-cuerpo" class="small text-body-secondary">Calculando…</div>
+    </div>
+
+    <button class="btn btn-tienda w-100 mt-3" disabled title="Se habilita cuando esté listo el carrito">
+      Agregar al carrito (próximamente)
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/cotizador.js' %}"></script>
+{% endblock %}

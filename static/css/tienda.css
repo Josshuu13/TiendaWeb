@@ -1,0 +1,106 @@
+/* Estilos de Moñería. Bootstrap hace el trabajo pesado; aquí va la identidad. */
+:root {
+  --rojo: #b3122e;
+  --rojo-oscuro: #8c0d23;
+  --verde: #1f5e3a;
+  --crema: #fbf6ef;
+  --tinta: #2b2024;
+  --borde: #eadfd3;
+}
+
+body {
+  background: var(--crema);
+  color: var(--tinta);
+  font-family: "Nunito", system-ui, sans-serif;
+}
+
+.titulo, .marca { font-family: "Fraunces", Georgia, serif; }
+.marca { color: var(--rojo) !important; font-size: 1.6rem; font-weight: 700; }
+
+.barra { background: #fff; border-bottom: 1px solid var(--borde); }
+.pie { background: #fff; border-top: 1px solid var(--borde); color: #6b5d62; }
+
+a { color: var(--rojo); }
+a:hover { color: var(--rojo-oscuro); }
+
+.btn-tienda {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--rojo);
+  --bs-btn-border-color: var(--rojo);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--rojo-oscuro);
+  --bs-btn-hover-border-color: var(--rojo-oscuro);
+  --bs-btn-active-bg: var(--rojo-oscuro);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--rojo);
+  --bs-btn-disabled-border-color: var(--rojo);
+}
+.btn-link { --bs-btn-color: var(--rojo); --bs-btn-hover-color: var(--rojo-oscuro); }
+
+.portada {
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 1.25rem;
+  padding: 2.5rem;
+}
+.portada-icono { font-size: 8rem; line-height: 1; }
+
+/* Tarjetas de producto */
+.tarjeta {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 1rem;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.tarjeta:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(43, 32, 36, .08); color: inherit; }
+
+.foto-producto { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.foto-grande { border-radius: 1rem; aspect-ratio: 1; }
+.foto-vacia { display: grid; place-items: center; font-size: 4rem; }
+.foto-grande.foto-vacia { font-size: 8rem; }
+.foto-monos { background: #fde8ec; }
+.foto-sueteres { background: #e6f0ea; }
+.foto-calcetines { background: #fff3d9; }
+
+.precio { font-weight: 700; color: var(--rojo); }
+
+.etiqueta { font-size: .75rem; padding: .15rem .55rem; border-radius: 999px; font-weight: 700; }
+.etiqueta-simulador { background: #e6f0ea; color: var(--verde); }
+.etiqueta-agotado { background: #eee; color: #777; }
+
+/* Selección de color */
+.muestra {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--c);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #bbb;
+  cursor: pointer;
+}
+.btn-check:checked + .muestra { box-shadow: 0 0 0 3px var(--tinta); }
+.btn-check:focus-visible + .muestra { outline: 3px solid #5b9dff; outline-offset: 2px; }
+
+/* Simulador (provisional) */
+.simulador {
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 1rem;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1.5rem;
+}
+.muestras-provisionales { display: flex; gap: 2rem; justify-content: center; }
+.punto-grande {
+  display: inline-block; width: 96px; height: 96px;
+  border-radius: 50%; border: 1px solid #ccc;
+  transition: background .2s ease;
+}
+
+.cotizacion { background: #fff; border: 1px solid var(--borde); border-radius: .75rem; }

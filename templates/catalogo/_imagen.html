@@ -1,0 +1,8 @@
+{% if producto.imagen %}
+  <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="foto-producto {{ clase }}">
+{% else %}
+  <div class="foto-producto foto-vacia foto-{{ producto.categoria.slug }} {{ clase }}" role="img"
+       aria-label="{{ producto.nombre }} (foto pendiente)">
+    <span>{% if producto.categoria.slug == 'monos' %}🎀{% elif producto.categoria.slug == 'sueteres' %}🧶{% else %}🧦{% endif %}</span>
+  </div>
+{% endif %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}{{ categoria.nombre|default:"Catálogo" }}{% endblock %}
+{% block contenido %}
+<h1 class="h3 titulo">{{ categoria.nombre|default:"Catálogo completo" }}</h1>
+{% if categoria.descripcion %}<p class="text-body-secondary">{{ categoria.descripcion }}</p>{% endif %}
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mt-1">
+  {% for producto in productos %}
+    {% include "catalogo/_tarjeta.html" %}
+  {% empty %}
+    <p class="text-body-secondary">No hay productos en esta categoría por ahora.</p>
+  {% endfor %}
+</div>
+{% endblock %}
