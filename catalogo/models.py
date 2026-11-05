@@ -1,19 +1,25 @@
 """
-Modelos del catálogo.
+Modelos del catálogo (tablas de la base de datos).
 
 Categoria   -> Moños, Suéteres navideños, Calcetines.
 Producto    -> lo que se muestra en el catálogo (precio base y días de elaboración).
 Variante    -> combinación vendible con existencias (talla y/o color). La usan los
                productos de catálogo: suéteres, calcetines y el moño "tal cual".
-Color       -> paleta de colores de listón disponible para el simulador.
-Parte       -> capa del moño personalizable (lazos, nudo, colas...). Cada parte
-               tiene su PNG y la lista de colores permitidos.
-Decoracion  -> extra opcional del moño (perla, cascabel, copo) con costo adicional.
+Color       -> paleta de colores de listón (escolares, navideños y básicos).
+Parte       -> capa del moño personalizable: patas, base de abajo, base de arriba,
+               decorado, tiras y nudo. Cada parte tiene su imagen (PNG en gris) y
+               la lista de colores permitidos.
+Estampado   -> listón decorado (cuadros, rombos...) que puede usarse en el decorado
+               en lugar de un color liso. Solo necesita UNA foto del listón, recta.
+Combinacion -> combinación de colores lista para usar ("Lo más vendido"). Con un
+               clic el cliente pinta todas las partes del moño.
 """
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse
 
+# Valida que el color tenga el formato #RRGGBB (por ejemplo #B3122E).
 validador_hex = RegexValidator(
     regex=r"^#[0-9A-Fa-f]{6}$",
     message="Usa el formato #RRGGBB, por ejemplo #C1121F.",
@@ -21,10 +27,12 @@ validador_hex = RegexValidator(
 
 
 class Categoria(models.Model):
+    """Agrupa productos en el menú (Moños, Suéteres, Calcetines)."""
+
     nombre = models.CharField(max_length=60, unique=True)
-    slug = models.SlugField(max_length=60, unique=True)
+    slug = models.SlugField(max_length=60, unique=True)  # versión para URL: "sueteres"
     descripcion = models.TextField(blank=True)
-    orden = models.PositiveSmallIntegerField(default=0)
+    orden = models.PositiveSmallIntegerField(default=0)  # orden en el menú
 
     class Meta:
         ordering = ["orden", "nombre"]
@@ -39,9 +47,22 @@ class Categoria(models.Model):
 
 
 class Color(models.Model):
+    """Color de listón. El simulador tiñe la foto gris con este código hexadecimal."""
+
+    # Grupos para mostrar la paleta ordenada al cliente.
+    ESCOLAR = "escolar"
+    NAVIDENO = "navideno"
+    BASICO = "basico"
+    GRUPOS = [
+        (ESCOLAR, "Escolares"),
+        (NAVIDENO, "Navideños"),
+        (BASICO, "Básicos y pastel"),
+    ]
+
     nombre = models.CharField(max_length=40, unique=True)
     codigo_hex = models.CharField(max_length=7, validators=[validador_hex])
-    activo = models.BooleanField(default=True)
+    grupo = models.CharField(max_length=10, choices=GRUPOS, default=BASICO)
+    activo = models.BooleanField(default=True)  # se puede ocultar sin borrarlo
     orden = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -53,6 +74,8 @@ class Color(models.Model):
 
 
 class Producto(models.Model):
+    """Producto del catálogo. Si es personalizable, se vende desde el simulador."""
+
     categoria = models.ForeignKey(
         Categoria, on_delete=models.PROTECT, related_name="productos"
     )
@@ -72,7 +95,7 @@ class Producto(models.Model):
     )
     imagen = models.ImageField(upload_to="productos/", blank=True)
     activo = models.BooleanField(default=True)
-    destacado = models.BooleanField(default=False)
+    destacado = models.BooleanField(default=False)  # aparece en la portada
     creado = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -86,18 +109,27 @@ class Producto(models.Model):
 
     @property
     def existencias_totales(self):
+        """Suma de existencias de todas sus variantes activas."""
         return sum(v.existencias for v in self.variantes.filter(activa=True))
 
     @property
     def disponible(self):
+        """¿Se puede vender? Los personalizables siempre, porque se hacen sobre pedido."""
         if not self.activo:
             return False
         if self.personalizable:
-            return True  # se elabora sobre pedido
+            return True
         return self.existencias_totales > 0
+
+    @property
+    def carpeta_simulador(self):
+        """Carpeta de archivos estáticos con las capas del simulador de este producto."""
+        return f"simulador/{self.slug}/"
 
 
 class Variante(models.Model):
+    """Pieza concreta con existencias: por ejemplo, Suéter Reno, talla M, rojo."""
+
     TALLAS = [
         ("UNI", "Unitalla"),
         ("CH", "Chica"),
@@ -116,7 +148,7 @@ class Variante(models.Model):
     color = models.ForeignKey(
         Color, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
     )
-    sku = models.CharField(max_length=40, unique=True)
+    sku = models.CharField(max_length=40, unique=True)  # código único de inventario
     existencias = models.PositiveIntegerField(default=0)
     precio_extra = models.DecimalField(
         max_digits=8, decimal_places=2, default=0,
@@ -127,6 +159,7 @@ class Variante(models.Model):
     class Meta:
         ordering = ["producto", "id"]  # en el orden en que se dieron de alta
         constraints = [
+            # No puede haber dos variantes iguales del mismo producto.
             models.UniqueConstraint(
                 fields=["producto", "talla", "color"], name="variante_unica"
             )
@@ -144,7 +177,12 @@ class Variante(models.Model):
 
 
 class Parte(models.Model):
-    """Capa recoloreable del moño personalizable."""
+    """
+    Capa recoloreable del moño personalizable.
+
+    Las capas se dibujan en el orden del campo `orden` (primero lo de atrás).
+    Todas las imágenes deben medir lo mismo para encajar una sobre otra.
+    """
 
     producto = models.ForeignKey(
         Producto,
@@ -153,19 +191,31 @@ class Parte(models.Model):
         limit_choices_to={"personalizable": True},
     )
     clave = models.SlugField(
-        max_length=30, help_text="Identificador corto: lazos, nudo, colas..."
+        max_length=30,
+        help_text="Identificador corto: patas, baseabajo, basearriba, decorado, tiras, nudo.",
     )
-    nombre = models.CharField(max_length=40)
+    nombre = models.CharField(max_length=40)  # lo que ve el cliente: "Base de arriba"
     orden = models.PositiveSmallIntegerField(
         default=0, help_text="Orden de dibujo: primero el fondo, al final lo de enfrente."
     )
     imagen_capa = models.ImageField(
         upload_to="capas/", blank=True,
-        help_text="PNG en tonos claros con fondo transparente.",
+        help_text="PNG en gris con fondo transparente. Si se deja vacío, se usa la "
+                  "imagen de static/simulador/<producto>/<clave>.png.",
     )
     colores = models.ManyToManyField(Color, related_name="partes")
     color_inicial = models.ForeignKey(
         Color, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    admite_estampado = models.BooleanField(
+        default=False,
+        help_text="Si está marcado, el cliente puede elegir un listón estampado "
+                  "en lugar de un color liso (se usa en el decorado).",
+    )
+    paso = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Orden en que el cliente elige las partes (paso 1, 2, 3...). "
+                  "Puede ser distinto del orden de dibujo.",
     )
 
     class Meta:
@@ -177,28 +227,109 @@ class Parte(models.Model):
     def __str__(self):
         return f"{self.producto.nombre} – {self.nombre}"
 
+    @property
+    def url_capa(self):
+        """URL de la imagen de la capa: la subida en el admin o, si no hay, la estática."""
+        if self.imagen_capa:
+            return self.imagen_capa.url
+        return static(f"{self.producto.carpeta_simulador}{self.clave}.png")
 
-class Decoracion(models.Model):
-    """Extra opcional (perla, cascabel, copo). Su imagen NO se recolorea."""
+
+class Estampado(models.Model):
+    """
+    Listón decorado que se "estampa" sobre el decorado del moño.
+
+    La imagen es una foto del listón, recto y vertical, recortada justo a su ancho
+    (sin mesa ni fondo). El simulador la repite a lo largo de las colas.
+    Los colores del estampado son los reales: no se recolorea.
+    """
 
     productos = models.ManyToManyField(
         Producto,
-        related_name="decoraciones",
+        related_name="estampados",
         limit_choices_to={"personalizable": True},
     )
-    nombre = models.CharField(max_length=40)
-    clave = models.SlugField(max_length=30, unique=True)
+    nombre = models.CharField(max_length=60)  # "Tejido rojo"
+    clave = models.SlugField(max_length=40, unique=True)  # "tejido-rojo"
+    imagen = models.ImageField(
+        upload_to="estampados/", blank=True,
+        help_text="Foto del listón recto y vertical, recortada a su ancho. Si se deja "
+                  "vacío, se usa static/simulador/estampados/<clave>.jpg.",
+    )
     precio_extra = models.DecimalField(
         max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)]
     )
-    dias_extra = models.PositiveSmallIntegerField(default=0)
-    imagen = models.ImageField(upload_to="decoraciones/", blank=True)
-    activa = models.BooleanField(default=True)
+    activo = models.BooleanField(default=True)
+    orden = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        ordering = ["nombre"]
-        verbose_name = "decoración"
-        verbose_name_plural = "decoraciones"
+        ordering = ["orden", "nombre"]
 
     def __str__(self):
         return f"{self.nombre} (+${self.precio_extra})"
+
+    @property
+    def url_imagen(self):
+        """URL de la tira del estampado: la subida en el admin o la estática."""
+        if self.imagen:
+            return self.imagen.url
+        return static(f"simulador/estampados/{self.clave}.jpg")
+
+
+class Combinacion(models.Model):
+    """
+    Combinación de colores lista para usar, que aparece en "Lo más vendido".
+
+    Se arma en el admin: nombre + un color por cada parte del moño (y, si se
+    quiere, un estampado para el decorado).
+    """
+
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name="combinaciones",
+        limit_choices_to={"personalizable": True},
+    )
+    nombre = models.CharField(max_length=60)  # "Navidad clásica"
+    estampado = models.ForeignKey(
+        Estampado, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Opcional: si se elige, el decorado usa este estampado.",
+    )
+    activa = models.BooleanField(default=True)
+    orden = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["orden", "nombre"]
+        verbose_name = "combinación (lo más vendido)"
+        verbose_name_plural = "combinaciones (lo más vendido)"
+
+    def __str__(self):
+        return self.nombre
+
+    def como_dict(self):
+        """Datos para el navegador: {clave de parte: id de color} y estampado."""
+        return {
+            "nombre": self.nombre,
+            "colores": {cp.parte.clave: cp.color_id for cp in self.colores.all()},
+            "estampado": self.estampado.clave if self.estampado else "",
+        }
+
+
+class CombinacionParte(models.Model):
+    """Color de una parte dentro de una combinación (por ejemplo: Patas = Vino)."""
+
+    combinacion = models.ForeignKey(
+        Combinacion, on_delete=models.CASCADE, related_name="colores"
+    )
+    parte = models.ForeignKey(Parte, on_delete=models.CASCADE, related_name="+")
+    color = models.ForeignKey(Color, on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        verbose_name = "color de la combinación"
+        verbose_name_plural = "colores de la combinación"
+        constraints = [
+            models.UniqueConstraint(fields=["combinacion", "parte"], name="combinacion_parte_unica")
+        ]
+
+    def __str__(self):
+        return f"{self.parte.nombre}: {self.color.nombre}"

@@ -6,12 +6,13 @@ Tienda B2C de moños para niña con simulador visual, más suéteres y calcetine
 ## Qué hay hasta ahora
 
 - Proyecto Django `tiendaWeb` con la app `catalogo`.
-- Modelos: `Categoria`, `Color`, `Producto`, `Variante` (talla, color y existencias), `Parte` (capas del moño) y `Decoracion`.
+- Modelos: `Categoria`, `Color` (agrupados en escolares, navideños y básicos), `Producto`, `Variante` (talla, color y existencias), `Parte` (capas del moño) y `Estampado` (listones decorados).
+- **Simulador visual del moño** con fotos reales: 6 partes con color propio (patas, base de abajo, base de arriba, decorado, tiras y nudo) y decorado liso o estampado.
 - Panel de administración en español (`/admin/`).
 - Páginas: inicio, catálogo por categoría y detalle de producto.
 - **Cotización validada en el servidor** (`/api/cotizar/`): el navegador solo manda la selección y el servidor calcula el precio, revisa colores permitidos y existencias.
 - Comando `cargar_datos_demo` con un catálogo de ejemplo.
-- 22 pruebas con pytest.
+- 30 pruebas con pytest.
 
 ## Cómo correrlo (Windows, macOS o Linux)
 
@@ -60,7 +61,10 @@ catalogo/
   management/commands/cargar_datos_demo.py
   tests/            pruebas con pytest
 templates/          HTML (Bootstrap 5)
-static/css, js      estilos y cotizador.js
+static/css          estilos
+static/js           cotizador.js (cotización en vivo), simulador.js (dibujo del moño)
+                    y personalizador.js (pasos, Lo más vendido y Restablecer)
+static/simulador/   capas del moño (PNG en gris), mapa del decorado y tiras de estampados
 docs/bitacora.md    plan baseline vs. real
 ```
 
@@ -69,28 +73,41 @@ docs/bitacora.md    plan baseline vs. real
 El cliente **nunca** manda precios; solo identificadores.
 
 ```json
-{ "producto": "sueter-reno", "variante": "SUETER-RENO-M-ROJ", "cantidad": 2 }
+{ "producto": "sueter-reno", "variante": "SUETER-RENO-M-ROJNAV", "cantidad": 2 }
 
 { "producto": "mono-clasico",
-  "opciones": { "lazos": 3, "nudo": 5, "decoracion": "perla" },
+  "opciones": { "patas": 11, "baseabajo": 1, "basearriba": 11,
+                "decorado": 12, "tiras": 1, "nudo": 11,
+                "estampado": "tejido-rojo" },
   "cantidad": 1 }
 ```
 
-En el moño, `lazos` y `nudo` son el **id** del color y `decoracion` es la **clave** de la decoración.
+En el moño, cada parte lleva el **id** del color. `estampado` es opcional y lleva la **clave** del listón estampado; si se manda, el decorado se muestra estampado y su color no se usa.
 
-## Conexión con el simulador
+## Cómo funciona el simulador
 
-`static/js/cotizador.js` emite el evento `seleccion-cambiada` cada vez que el cliente cambia un color:
+1. Cada parte del moño es un PNG **en escala de grises** con fondo transparente (`static/simulador/mono-clasico/`). Todas miden lo mismo y encajan una sobre otra.
+2. `simulador.js` dibuja las capas en orden (de atrás hacia adelante) en un `<canvas>` y tiñe cada una con el color elegido usando la fusión **multiply**: lo claro queda del color puro y las sombras del mismo color, más oscuro. Así se conservan la textura y el volumen del listón.
+3. Para un **estampado**, se usa la foto del listón recta (`static/simulador/estampados/`) y un mapa (`decorado-uv.png`) que indica en qué parte del ancho del listón cae cada píxel del decorado; encima se aplican las sombras de la foto original.
+4. `cotizador.js` avisa los cambios con el evento `seleccion-cambiada`; el simulador solo escucha ese evento y no sabe nada de precios.
 
-```js
-document.addEventListener("seleccion-cambiada", (e) => {
-  // e.detail.colores   -> { lazos: "#B3122E", nudo: "#F4F4F0" }
-  // e.detail.decoracion -> "perla" | null
-});
-```
+### Personalizador paso a paso
 
-El simulador con fotos solo tiene que escuchar este evento y redibujar el canvas dentro de `<div id="simulador">`.
-Las capas PNG se suben en el admin, en cada **Parte** del moño.
+El cliente elige las partes en orden (campo `paso` de cada Parte): Patas → Base superior → Base inferior → Decorado → Tiras → Nudo, con botones Anterior/Siguiente. Al cambiar de paso, la parte se resalta en el moño. **Restablecer** vuelve a los colores iniciales y **Lo más vendido** aplica combinaciones listas.
+
+### Agregar una combinación a "Lo más vendido" (sin programar)
+
+En el admin: **Combinaciones (lo más vendido) → Añadir**. Ponle nombre, elige el producto y agrega un renglón por parte con su color (opcionalmente un estampado para el decorado).
+
+### Agregar un listón estampado nuevo (sin programar)
+
+1. Toma una foto del listón **recto, vertical y de frente**, con luz pareja.
+2. Recórtala **justo al ancho del listón** (sin mesa ni fondo).
+3. En el admin: **Estampados → Añadir**, sube la imagen, ponle nombre, precio extra y marca el producto "Moño clásico personalizable".
+
+### Cambiar las fotos de las capas
+
+En el admin, dentro del producto, cada **Parte** tiene el campo *Imagen capa*. Si se sube una imagen ahí, se usa en lugar de la de `static/simulador/`. Debe medir lo mismo que las demás capas.
 
 ## Producción (PostgreSQL)
 

@@ -85,22 +85,140 @@ a:hover { color: var(--rojo-oscuro); }
 .btn-check:checked + .muestra { box-shadow: 0 0 0 3px var(--tinta); }
 .btn-check:focus-visible + .muestra { outline: 3px solid #5b9dff; outline-offset: 2px; }
 
-/* Simulador (provisional) */
-.simulador {
+/* Simulador: columna fija, caja, visor con zoom y controles */
+.simulador-fijo { position: sticky; top: 1rem; }   /* se queda visible al bajar */
+.simulador-caja {
+  position: relative;
   background: #fff;
   border: 1px solid var(--borde);
   border-radius: 1rem;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 1.5rem;
+  padding: .75rem;
 }
-.muestras-provisionales { display: flex; gap: 2rem; justify-content: center; }
-.punto-grande {
-  display: inline-block; width: 96px; height: 96px;
-  border-radius: 50%; border: 1px solid #ccc;
-  transition: background .2s ease;
+.simulador-visor {
+  position: relative;
+  overflow: hidden;                         /* recorta el moño al hacer zoom */
+  height: min(calc(100vh - 180px), 640px);  /* cabe completo en la pantalla */
+  min-height: 320px;
+  display: flex;                            /* centra el moño */
+  align-items: center;
+  justify-content: center;
+  border-radius: .6rem;
+  cursor: grab;
+  touch-action: none;                       /* el arrastre no mueve la página */
+  user-select: none;
 }
+.simulador-visor.arrastrando { cursor: grabbing; }
+.simulador-canvas {
+  display: block;
+  width: auto;             /* el moño se ajusta al visor sin deformarse */
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  transform-origin: center center;
+  transition: transform .15s ease;
+}
+.simulador-visor.arrastrando .simulador-canvas { transition: none; }
+.simulador-cargando {            /* aviso mientras cargan las fotos */
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: #6b5d62;
+}
+.simulador-zoom {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  margin-top: .5rem;
+}
+.simulador-zoom .btn { min-width: 2.25rem; border: 1px solid var(--borde); }
+.simulador-zoom #zoom-valor { min-width: 3.5rem; text-align: center; }
+
+/* En celular: el moño no se queda fijo y el visor es más bajo */
+@media (max-width: 991.98px) {
+  .simulador-fijo { position: static; }
+  .simulador-visor { height: 60vh; }
+}
+
+/* Etiqueta con el nombre de la parte resaltada, arriba del moño */
+.simulador-etiqueta {
+  position: absolute; top: .5rem; left: 50%; transform: translateX(-50%);
+  background: var(--tinta); color: #fff; border-radius: 999px;
+  padding: .2rem .8rem; font-size: .85rem;
+  opacity: 0; transition: opacity .25s; pointer-events: none;
+}
+.simulador-etiqueta.visible { opacity: 1; }
+
+/* ===== Personalizador paso a paso ===== */
+.btn-vendido { border: 1px solid var(--rojo); color: var(--rojo); background: #fff; font-weight: 600; }
+.btn-vendido:hover, .btn-vendido[aria-expanded="true"] { background: var(--rojo); color: #fff; }
+
+/* "Lo más vendido": tarjetas de combinaciones */
+.vendidos {
+  background: #fff; border: 1px solid var(--borde); border-radius: .9rem;
+  padding: .75rem; margin-bottom: .75rem;
+}
+.vendidos-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .5rem; }
+.combo {
+  border: 1px solid var(--borde); border-radius: .6rem; background: #fff;
+  padding: .5rem; font-size: .85rem; cursor: pointer;
+}
+.combo:hover, .combo:focus-visible { box-shadow: 0 0 0 2px var(--tinta); }
+.combo-puntos { display: flex; justify-content: center; gap: 2px; margin-bottom: .35rem; }
+.combo-puntos i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1px #ccc; }
+
+/* Fila de partes: un círculo por parte */
+.partes-fila {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: .3rem;
+  background: #fff; border: 1px solid var(--borde); border-radius: .9rem;
+  padding: .75rem .4rem .6rem;
+}
+.parte-boton {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  background: none; border: 0; border-radius: .6rem; padding: .35rem .1rem;
+  color: inherit; font: inherit; cursor: pointer;
+}
+.parte-boton:hover { background: #faf5ef; }
+.parte-boton.activa { background: #faf5ef; }
+.parte-num { position: absolute; top: .1rem; left: .45rem; font-size: .7rem; color: #7a6d72; }
+.parte-boton.hecha .parte-num::after { content: " ✓"; color: #2e8b3e; }
+.parte-circulo {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 3px solid #fff; box-shadow: 0 0 0 1px #c9c0b6;
+  transition: transform .15s;
+  background-size: cover !important;   /* para la miniatura del estampado */
+  background-position: center !important;
+}
+.parte-boton.activa .parte-circulo { box-shadow: 0 0 0 3px var(--tinta); transform: scale(1.06); }
+.parte-nombre { font-weight: 700; font-size: .85rem; line-height: 1.1; text-align: center; }
+.parte-color { font-size: .72rem; color: #7a6d72; line-height: 1.1; text-align: center; }
+/* Flechita que une la parte activa con su panel */
+.parte-boton.activa::after {
+  content: ""; position: absolute; bottom: -.95rem; left: 50%; transform: translateX(-50%);
+  border: 9px solid transparent; border-bottom-color: #fff;
+  filter: drop-shadow(0 -1px 0 var(--borde));
+}
+
+/* Panel con los colores de la parte activa */
+.parte-panel {
+  background: #fff; border: 1px solid var(--borde); border-radius: .9rem;
+  padding: 1rem 1.1rem; margin-top: .8rem; margin-bottom: 1rem;
+}
+.parte-navegar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1rem; padding-top: .8rem; border-top: 1px solid #f0e8df;
+}
+
+/* En celular: la fila de partes se desliza de lado */
+@media (max-width: 575.98px) {
+  .partes-fila { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .parte-boton { flex: 0 0 82px; scroll-snap-align: start; }
+}
+
+/* Opciones de listón estampado (miniatura + nombre) */
+.opcion-estampado {
+  display: flex; align-items: center; gap: .4rem;
+  border: 1px solid #ccc; border-radius: .4rem;
+  padding: .2rem .5rem .2rem .2rem; cursor: pointer; font-size: .85rem;
+}
+.opcion-estampado img { width: 18px; height: 34px; object-fit: cover; border-radius: 2px; }
+.btn-check:checked + .opcion-estampado { border-color: var(--tinta); box-shadow: 0 0 0 2px var(--tinta); }
+.btn-check:focus-visible + .opcion-estampado { outline: 3px solid #5b9dff; outline-offset: 2px; }
 
 .cotizacion { background: #fff; border: 1px solid var(--borde); border-radius: .75rem; }
