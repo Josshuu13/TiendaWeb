@@ -1,27 +1,78 @@
 {% extends "base.html" %}
+{% load static humanize %}
+{% comment %}
+  Portada: presentación, compra por categoría, kits navideños y "Así de fácil".
+{% endcomment %}
 {% block titulo %}Inicio{% endblock %}
 {% block contenido %}
-<section class="portada mb-5">
-  <div class="row align-items-center g-4">
-    <div class="col-md-7">
-      <h1 class="display-5 titulo">Diseña su moño y míralo antes de comprarlo</h1>
-      <p class="lead">Moños para niña hechos a mano, con los colores que tú elijas.
-        Completa el look navideño con suéteres y calcetines a juego.</p>
-      <a href="{% url 'catalogo:producto' 'mono-clasico' %}" class="btn btn-tienda btn-lg">Personalizar un moño</a>
-      <a href="{% url 'catalogo:lista' %}" class="btn btn-link">Ver catálogo</a>
-    </div>
-    <div class="col-md-5 text-center">
-      <div class="portada-icono" aria-hidden="true">🎀</div>
-    </div>
-  </div>
-</section>
+<div class="container">
 
-<h2 class="h4 titulo mb-3">Destacados</h2>
-<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-  {% for producto in destacados %}
-    {% include "catalogo/_tarjeta.html" %}
-  {% empty %}
-    <p class="text-body-secondary">Aún no hay productos. Ejecuta <code>python manage.py cargar_datos_demo</code>.</p>
-  {% endfor %}
+  <!-- ===== Portada ===== -->
+  <section class="portada">
+    <div class="portada-caja">
+      <div class="portada-texto">
+        <div class="pre">Hecho a mano · Temporada navideña</div>
+        <h1 class="titulo">Diseña su moño y míralo antes de comprarlo</h1>
+        <p>Elige el color de cada parte en nuestro simulador con fotos reales.
+           Completa el look con suéter y calcetines a juego.</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% if mono_personalizable %}
+            <a class="btn btn-tienda btn-lg" href="{{ mono_personalizable.get_absolute_url }}">Diseñar mi moño →</a>
+          {% endif %}
+          <a class="btn btn-borde btn-lg" href="{% url 'catalogo:categoria' 'kits' %}">Ver kits navideños</a>
+        </div>
+      </div>
+      <div class="portada-img">
+        <img src="{% static 'img/mono-portada.webp' %}" alt="Moño navideño hecho a mano">
+        {% if mono_personalizable %}
+          <div class="sello">Desde <b>${{ mono_personalizable.precio_base|floatformat:0 }}</b> · listo en {{ mono_personalizable.dias_elaboracion }} días</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Compra por categoría (sin los kits, que tienen su propia sección) ===== -->
+  <section class="seccion">
+    <h2 class="titulo">Compra por categoría</h2>
+    <div class="categorias">
+      {% for item in categorias %}
+        <a class="cat" href="{{ item.categoria.get_absolute_url }}">
+          <div class="cat-img cat-{{ item.categoria.slug }}">
+            {% include "catalogo/_imagen.html" with producto=item.muestra %}
+          </div>
+          <div class="cat-cuerpo">
+            <h3 class="titulo">{{ item.categoria.nombre }}</h3>
+            <p>{{ item.categoria.descripcion }}</p>
+            {% if item.desde %}<span>Desde ${{ item.desde|floatformat:0|intcomma }} →</span>{% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ===== Kits navideños ===== -->
+  {% if kits %}
+    <section class="seccion">
+      <div class="kits-banda">
+        <div class="encabezado">
+          <h2 class="titulo">🎁 Kits navideños a juego</h2>
+          <a href="{% url 'catalogo:categoria' 'kits' %}">Ver todos →</a>
+        </div>
+        <div class="productos">
+          {% for producto in kits %}{% include "catalogo/_tarjeta.html" %}{% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- ===== Así de fácil ===== -->
+  <section class="seccion">
+    <h2 class="titulo">Así de fácil</h2>
+    <div class="pasos">
+      <div class="paso"><div class="ic">🎨</div><h3>1. Diseña o elige</h3><p>Personaliza tu moño o escoge talla y color de tu prenda.</p></div>
+      <div class="paso"><div class="ic">💳</div><h3>2. Paga en línea</h3><p>Pago seguro con tarjeta. Te confirmamos al instante.</p></div>
+      <div class="paso"><div class="ic">📦</div><h3>3. Recíbelo</h3><p>Te decimos la fecha de entrega antes de pagar.</p></div>
+    </div>
+  </section>
 </div>
 {% endblock %}

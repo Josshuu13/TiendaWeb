@@ -119,7 +119,7 @@ def test_cantidad_fuera_de_rango(cantidad):
 # --- Productos de catálogo ---
 
 def test_sueter_talla_grande_tiene_extra():
-    v = Variante.objects.get(producto__slug="sueter-reno", talla="G")
+    v = Variante.objects.get(producto__slug="sueter-reno", talla="G", color__nombre="Rojo navidad")
     cot = cotizar({"producto": "sueter-reno", "variante": v.sku, "cantidad": 2})
     assert cot.precio_unitario == Decimal("490.00")
     assert cot.total == Decimal("980.00")
@@ -153,6 +153,7 @@ def test_cargar_datos_demo_se_puede_repetir():
     call_command("cargar_datos_demo", verbosity=0)  # segunda vez: no debe duplicar
     assert Parte.objects.filter(producto__slug="mono-clasico").count() == 6
     assert Estampado.objects.count() == 2
+    assert Producto.objects.filter(categoria__slug="kits").count() == 4
 
 
 # --- API y páginas ---
@@ -192,6 +193,9 @@ def test_pagina_del_mono_incluye_simulador(client):
     ("catalogo:categoria", ["sueteres"]),
     ("catalogo:producto", ["mono-clasico"]),
     ("catalogo:producto", ["calcetines-rayas"]),
+    ("catalogo:producto", ["kit-reno-rojo"]),
+    ("catalogo:categoria", ["kits"]),
+    ("catalogo:ayuda", []),
 ])
 def test_paginas_cargan(client, nombre, args):
     assert client.get(reverse(nombre, args=args)).status_code == 200

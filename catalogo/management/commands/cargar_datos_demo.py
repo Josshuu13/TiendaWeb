@@ -49,9 +49,22 @@ COLORES = [
 ]
 
 CATEGORIAS = [
-    ("Moños", "monos", "Moños para niña hechos a mano. Diseña el tuyo en el simulador.", 1),
-    ("Suéteres navideños", "sueteres", "Suéteres de temporada para toda la familia.", 2),
-    ("Calcetines", "calcetines", "Calcetines navideños a juego.", 3),
+    ("Moños", "monos", "Personalízalo en el simulador o elige uno escolar listo para usar.", 1),
+    ("Suéteres navideños", "sueteres", "Tallas para niña y adulto. Cambio de talla sin costo.", 2),
+    ("Calcetines", "calcetines", "Diseños navideños que combinan con todo.", 3),
+    ("Kits navideños", "kits", "Moño, suéter y calcetines a juego. Más fácil de regalar y con descuento.", 4),
+]
+
+# Kits navideños de ejemplo: (slug, nombre, precio, precio sin descuento, color, descripción)
+KITS = [
+    ("kit-reno-rojo", "Kit Reno rojo", "580.00", "680.00", "Rojo navidad",
+     "Moño navideño + Suéter Reno + Calcetines Santa, en rojo a juego."),
+    ("kit-pino", "Kit Pino", "590.00", "695.00", "Verde pino",
+     "Moño verde pino + Suéter Copos + Calcetines Rayas."),
+    ("kit-vino-dorado", "Kit Vino y dorado", "585.00", "685.00", "Vino",
+     "Moño vino y dorado + suéter + calcetines, ideal para posadas."),
+    ("kit-escolar", "Kit Escolar", "170.00", "195.00", "Azul marino",
+     "Moño escolar + calcetines (sin suéter), en colores de uniforme."),
 ]
 
 # Partes del moño personalizable, en orden de dibujo (de atrás hacia adelante).
@@ -175,32 +188,46 @@ class Command(BaseCommand):
         for color, stock in stock_escolar.items():
             self._variante(escolar, "UNI", colores[color], stock)
 
-        # --- Suéteres ---
-        for slug, nombre, precio, color, desc in [
-            ("sueter-reno", "Suéter Reno", "450.00", "Rojo navidad",
-             "Suéter tejido con reno y copos."),
-            ("sueter-copos", "Suéter Copos", "480.00", "Verde pino",
+        # --- Suéteres (cada uno en uno o varios colores) ---
+        for slug, nombre, precio, lista_colores, desc in [
+            ("sueter-reno", "Suéter Reno", "450.00", ["Rojo navidad", "Verde pino"],
+             "Suéter tejido con reno y copos de nieve. Suave, abrigador y perfecto para posadas y fotos familiares."),
+            ("sueter-copos", "Suéter Copos", "480.00", ["Verde pino"],
              "Suéter con patrón de copos de nieve."),
         ]:
             p = self._producto(slug, cats["sueteres"], nombre, precio, 0, desc,
                                destacado=slug == "sueter-reno")
-            for t in TALLAS_NINA:
-                self._variante(p, t, colores[color], 6)
-            for t in TALLAS_ADULTO:
-                extra = "40.00" if t == "G" else "0"  # la talla G cuesta $40 más
-                self._variante(p, t, colores[color], 4, extra)
+            p.variantes.exclude(color__nombre__in=lista_colores).delete()
+            for color in lista_colores:
+                for t in TALLAS_NINA:
+                    # Ejemplo de talla agotada: 10-12 del Reno verde.
+                    stock = 0 if (slug == "sueter-reno" and color == "Verde pino" and t == "10-12") else 6
+                    self._variante(p, t, colores[color], stock)
+                for t in TALLAS_ADULTO:
+                    extra = "40.00" if t == "G" else "0"  # la talla G cuesta $40 más
+                    self._variante(p, t, colores[color], 4, extra)
 
         # --- Calcetines ---
-        for slug, nombre, precio, desc in [
-            ("calcetines-rayas", "Calcetines Rayas navideñas", "95.00",
-             "Calcetines a rayas rojo y blanco."),
-            ("calcetines-santa", "Calcetines Santa", "110.00",
+        for slug, nombre, precio, color, desc in [
+            ("calcetines-rayas", "Calcetines Rayas navideñas", "95.00", "Verde pino",
+             "Calcetines a rayas, cómodos para toda la temporada."),
+            ("calcetines-santa", "Calcetines Santa", "110.00", "Rojo navidad",
              "Calcetines con Santa y cascabel."),
         ]:
             p = self._producto(slug, cats["calcetines"], nombre, precio, 0, desc,
                                destacado=slug == "calcetines-santa")
+            p.variantes.exclude(color=colores[color]).delete()
             for t in TALLAS_NINA + ["UNI"]:
-                self._variante(p, t, None, 10)
+                self._variante(p, t, colores[color], 10)
+
+        # --- Kits navideños (se venden como un producto con precio de paquete) ---
+        for slug, nombre, precio, anterior, color, desc in KITS:
+            p = self._producto(slug, cats["kits"], nombre, precio, 3, desc,
+                               destacado=slug != "kit-escolar")  # los destacados salen en la portada
+            p.precio_anterior = Decimal(anterior)
+            p.save(update_fields=["precio_anterior"])
+            p.variantes.exclude(color=colores[color]).delete()
+            self._variante(p, "UNI", colores[color], 8)
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Categoria.objects.count()} categorías, "

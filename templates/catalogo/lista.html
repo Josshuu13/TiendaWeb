@@ -1,14 +1,35 @@
 {% extends "base.html" %}
+{% comment %}
+  Lista de productos (todo el catálogo o una categoría) con filtros por talla y color.
+  Los filtros se mandan en la URL: ?talla=nina&color=12
+{% endcomment %}
 {% block titulo %}{{ categoria.nombre|default:"Catálogo" }}{% endblock %}
 {% block contenido %}
-<h1 class="h3 titulo">{{ categoria.nombre|default:"Catálogo completo" }}</h1>
-{% if categoria.descripcion %}<p class="text-body-secondary">{{ categoria.descripcion }}</p>{% endif %}
+<div class="container">
+  <div class="miga"><a href="{% url 'catalogo:inicio' %}">Inicio</a> › {{ categoria.nombre|default:"Catálogo" }}</div>
+  <h1 class="titulo h-pagina">{% if categoria.slug == 'kits' %}🎁 {% endif %}{{ categoria.nombre|default:"Catálogo completo" }}</h1>
+  {% if categoria.descripcion %}<p class="text-body-secondary mb-0">{{ categoria.descripcion }}</p>{% endif %}
 
-<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mt-1">
-  {% for producto in productos %}
-    {% include "catalogo/_tarjeta.html" %}
-  {% empty %}
-    <p class="text-body-secondary">No hay productos en esta categoría por ahora.</p>
-  {% endfor %}
+  {% if filtros_talla or filtros_color %}
+    <!-- Filtros: cada botón es un link que agrega el filtro a la URL -->
+    <div class="filtros">
+      <a class="filtro {% if not talla_sel and not color_sel %}sel{% endif %}" href="?">Todos</a>
+      {% for f in filtros_talla %}
+        <a class="filtro {% if talla_sel == f.clave %}sel{% endif %}" href="?talla={{ f.clave }}{% if color_sel %}&color={{ color_sel }}{% endif %}">{{ f.nombre }}</a>
+      {% endfor %}
+      {% for c in filtros_color %}
+        <a class="filtro filtro-color {% if color_sel == c.pk %}sel{% endif %}" href="?color={{ c.pk }}{% if talla_sel %}&talla={{ talla_sel }}{% endif %}">
+          <i style="background: {{ c.codigo_hex }}"></i>{{ c.nombre }}</a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="productos mt-3">
+    {% for producto in productos %}
+      {% include "catalogo/_tarjeta.html" %}
+    {% empty %}
+      <p class="text-body-secondary">No hay productos con esos filtros. <a href="?">Ver todos</a></p>
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}

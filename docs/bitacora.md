@@ -16,6 +16,7 @@ Fecha de entrega final: **20 de noviembre de 2026**.
 | 03/11/2026 | Se reemplazan las decoraciones (perla, cascabel, copo) por **decorados estampados** (listones decorados). | Es lo que realmente se vende; cada estampado nuevo solo requiere una foto del listón. |
 | 03/11/2026 | Paleta de 21 colores agrupada en **escolares, navideños y básicos**. | Responde al mercado objetivo: uniforme escolar y temporada navideña. |
 | 04/11/2026 | Personalizador **paso a paso** (6 pasos con Anterior/Siguiente), resaltado de la parte en el moño, Restablecer, zoom y botón **Lo más vendido**. | Simplifica la experiencia: el cliente no se pierde entre 6 partes y entiende qué pieza cambia. |
+| 05/11/2026 | Rediseño de la tienda: portada por categorías, sección de **kits navideños**, filtros, tallas como botones, fecha estimada de entrega y página de políticas. | Navegación más simple; el Kit Navideño (valor agregado) queda visible; la fecha de entrega y las políticas de devolución son requisitos del proyecto. |
 | 26/10/2026 | Calendario comprimido de 8 a ~4 semanas restantes. | Fecha de entrega final: 20/11/2026. |
 
 ## Seguimiento de tareas

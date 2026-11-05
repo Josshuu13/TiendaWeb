@@ -1,18 +1,22 @@
 {% load humanize %}
-<div class="col">
-  <a href="{{ producto.get_absolute_url }}" class="tarjeta h-100">
-    {% include "catalogo/_imagen.html" with clase="" %}
-    <div class="p-3">
-      <div class="small text-body-secondary">{{ producto.categoria.nombre }}</div>
-      <h3 class="h6 fw-bold mb-1">{{ producto.nombre }}</h3>
-      <div class="d-flex justify-content-between align-items-center">
-        <span class="precio">{% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:2|intcomma }}</span>
-        {% if producto.personalizable %}
-          <span class="etiqueta etiqueta-simulador">Personalizable</span>
-        {% elif not producto.disponible %}
-          <span class="etiqueta etiqueta-agotado">Agotado</span>
-        {% endif %}
-      </div>
+{% comment %} Tarjeta de producto para las listas (categorías y "Combínalo con…"). {% endcomment %}
+<a href="{{ producto.get_absolute_url }}" class="prod">
+  <div class="prod-img">
+    {% if producto.personalizable %}<span class="etiqueta nuevo">Personalizable</span>
+    {% elif not producto.disponible %}<span class="etiqueta agotado">Agotado</span>
+    {% elif producto.ahorro %}<span class="etiqueta ahorro">Ahorra ${{ producto.ahorro|floatformat:0 }}</span>{% endif %}
+    {% include "catalogo/_imagen.html" %}
+  </div>
+  <div class="prod-cuerpo">
+    {% with colores=producto.colores_disponibles %}
+      {% if colores|length > 0 and not producto.personalizable and producto.categoria.slug != 'kits' %}
+        <div class="puntos">{% for c in colores %}<i style="background: {{ c.codigo_hex }}" title="{{ c.nombre }}"></i>{% endfor %}</div>
+      {% endif %}
+    {% endwith %}
+    <h3>{{ producto.nombre }}</h3>
+    <div>
+      {% if producto.precio_anterior %}<s>${{ producto.precio_anterior|floatformat:0|intcomma }}</s>{% endif %}
+      <b>{% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:0|intcomma }}</b>
     </div>
-  </a>
-</div>
+  </div>
+</a>

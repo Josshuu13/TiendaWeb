@@ -1,8 +1,30 @@
+{% load static %}
+{% comment %}
+  Imagen de un producto.
+  - Si tiene foto subida en el admin, se usa la foto.
+  - Si no: los moños usan una vista del simulador en su color, los suéteres y
+    calcetines un dibujo de ejemplo, y los kits muestran sus tres piezas juntas.
+  Parámetro opcional: clase (clases CSS extra).
+{% endcomment %}
+{% with cat=producto.categoria.slug color=producto.color_muestra primer_color=producto.colores_disponibles.0 %}
 {% if producto.imagen %}
-  <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="foto-producto {{ clase }}">
+  <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="{{ clase }}">
+{% elif cat == "monos" %}
+  {% if producto.personalizable %}
+    <img src="{% static 'img/monos/personalizable.webp' %}" alt="{{ producto.nombre }}" class="{{ clase }}" data-imagen-mono>
+  {% else %}
+    <img src="{% static 'img/monos/' %}{{ primer_color.nombre|slugify }}.webp" alt="{{ producto.nombre }}"
+         class="{{ clase }}" data-imagen-mono data-base="{% static 'img/monos/' %}">
+  {% endif %}
+{% elif cat == "sueteres" %}
+  {% include "catalogo/_dibujo.html" with tipo="sueter" %}
+{% elif cat == "calcetines" %}
+  {% include "catalogo/_dibujo.html" with tipo="calcetin" %}
 {% else %}
-  <div class="foto-producto foto-vacia foto-{{ producto.categoria.slug }} {{ clase }}" role="img"
-       aria-label="{{ producto.nombre }} (foto pendiente)">
-    <span>{% if producto.categoria.slug == 'monos' %}🎀{% elif producto.categoria.slug == 'sueteres' %}🧶{% else %}🧦{% endif %}</span>
-  </div>
+  <span class="kit-piezas">
+    <img src="{% static 'img/monos/' %}{{ primer_color.nombre|default:'Rojo navidad'|slugify }}.webp" alt="">
+    {% include "catalogo/_dibujo.html" with tipo="sueter" %}
+    {% include "catalogo/_dibujo.html" with tipo="calcetin" %}
+  </span>
 {% endif %}
+{% endwith %}

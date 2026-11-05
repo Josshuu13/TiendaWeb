@@ -1,0 +1,20 @@
+{% comment %}
+  Dibujo de ejemplo de una prenda mientras no haya foto.
+  Parámetros: tipo ("sueter" o "calcetin") y color (#RRGGBB).
+  El color se pasa como variable CSS (--prenda) para que JavaScript pueda cambiarlo.
+{% endcomment %}
+{% if tipo == "sueter" %}
+<svg class="dibujo" viewBox="0 0 200 180" style="--prenda: {{ color }}" role="img" aria-label="Suéter (foto pendiente)">
+  <path d="M60 20 L85 12 Q100 28 115 12 L140 20 L190 55 L170 90 L150 78 L150 170 L50 170 L50 78 L30 90 L10 55 Z" fill="var(--prenda)"/>
+  <path d="M50 150 H150 M50 160 H150" stroke="#fff" stroke-width="5" opacity=".85"/>
+  <g fill="#fff" opacity=".9"><circle cx="70" cy="110" r="4"/><circle cx="100" cy="100" r="4"/><circle cx="130" cy="110" r="4"/><circle cx="85" cy="130" r="3"/><circle cx="115" cy="130" r="3"/></g>
+  <path d="M92 70 l8 -14 l8 14 z" fill="#fff" opacity=".9"/>
+</svg>
+{% else %}
+<svg class="dibujo" viewBox="0 0 120 180" style="--prenda: {{ color }}" role="img" aria-label="Calcetín (foto pendiente)">
+  <path d="M35 10 H85 V105 Q85 120 95 128 L108 140 Q118 152 106 166 Q96 176 82 168 L40 140 Q30 133 32 118 L35 105 Z" fill="var(--prenda)"/>
+  <rect x="35" y="10" width="50" height="22" fill="#fff" opacity=".9"/>
+  <path d="M35 50 H85 M35 70 H85" stroke="#fff" stroke-width="6" opacity=".85"/>
+  <circle cx="96" cy="152" r="9" fill="#fff" opacity=".9"/>
+</svg>
+{% endif %}

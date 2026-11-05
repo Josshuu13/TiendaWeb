@@ -1,7 +1,7 @@
 """
 Modelos del catálogo (tablas de la base de datos).
 
-Categoria   -> Moños, Suéteres navideños, Calcetines.
+Categoria   -> Moños, Suéteres navideños, Calcetines, Kits navideños.
 Producto    -> lo que se muestra en el catálogo (precio base y días de elaboración).
 Variante    -> combinación vendible con existencias (talla y/o color). La usan los
                productos de catálogo: suéteres, calcetines y el moño "tal cual".
@@ -85,6 +85,10 @@ class Producto(models.Model):
     precio_base = models.DecimalField(
         max_digits=8, decimal_places=2, validators=[MinValueValidator(0)]
     )
+    precio_anterior = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        help_text="Opcional. Precio sin descuento; se muestra tachado (útil para los kits).",
+    )
     dias_elaboracion = models.PositiveSmallIntegerField(
         default=0,
         help_text="Días hábiles para preparar el producto antes de enviarlo.",
@@ -120,6 +124,29 @@ class Producto(models.Model):
         if self.personalizable:
             return True
         return self.existencias_totales > 0
+
+    @property
+    def ahorro(self):
+        """Cuánto se ahorra respecto al precio anterior (0 si no hay descuento)."""
+        if self.precio_anterior and self.precio_anterior > self.precio_base:
+            return self.precio_anterior - self.precio_base
+        return 0
+
+    @property
+    def colores_disponibles(self):
+        """Colores distintos de sus variantes activas (para los puntitos y el selector)."""
+        vistos, colores = set(), []
+        for v in self.variantes.all():
+            if v.activa and v.color_id and v.color_id not in vistos:
+                vistos.add(v.color_id)
+                colores.append(v.color)
+        return colores
+
+    @property
+    def color_muestra(self):
+        """Color con el que se dibuja el producto mientras no tenga foto."""
+        colores = self.colores_disponibles
+        return colores[0].codigo_hex if colores else "#B3122E"
 
     @property
     def carpeta_simulador(self):

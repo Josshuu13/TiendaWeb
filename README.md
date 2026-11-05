@@ -12,7 +12,16 @@ Tienda B2C de moños para niña con simulador visual, más suéteres y calcetine
 - Páginas: inicio, catálogo por categoría y detalle de producto.
 - **Cotización validada en el servidor** (`/api/cotizar/`): el navegador solo manda la selección y el servidor calcula el precio, revisa colores permitidos y existencias.
 - Comando `cargar_datos_demo` con un catálogo de ejemplo.
-- 30 pruebas con pytest.
+- 42 pruebas con pytest.
+
+## Tienda (portada, categorías y kits)
+
+- **Portada:** compra por categoría, kits navideños (productos de la categoría `kits` marcados como destacados) y "Así de fácil".
+- **Listas con filtros** por talla (Niña/Adulto) y color: `/catalogo/sueteres/?talla=nina&color=12`.
+- **Página de producto:** colores y tallas como botones (`static/js/producto.js`), tallas agotadas tachadas y **fecha estimada de entrega** (`catalogo/entregas.py`: días de elaboración + días de envío, solo días hábiles).
+- **Kits:** se dan de alta como productos de la categoría *Kits navideños*; el campo *precio anterior* muestra el descuento.
+- **Ayuda** (`/ayuda/`): políticas de envío, cambios y devoluciones, y cancelación.
+- Mientras no haya fotos, los suéteres y calcetines se muestran con un dibujo de ejemplo en su color. Al subir una foto en el admin, se usa la foto.
 
 ## Cómo correrlo (Windows, macOS o Linux)
 

@@ -10,33 +10,59 @@
   <link href="{% static 'css/tienda.css' %}?v={{ version_estaticos }}" rel="stylesheet">
 </head>
 <body>
-  <nav class="navbar navbar-expand-md barra">
-    <div class="container">
-      <a class="navbar-brand marca" href="{% url 'catalogo:inicio' %}">Moñería</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
-              aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="menu">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="{% url 'catalogo:lista' %}">Todo</a></li>
-          {% for c in categorias_menu %}
-            <li class="nav-item"><a class="nav-link" href="{{ c.get_absolute_url }}">{{ c.nombre }}</a></li>
-          {% endfor %}
-        </ul>
-        <span class="navbar-text small text-body-secondary">Carrito · próximamente</span>
-      </div>
-    </div>
-  </nav>
+  <!-- Franja de aviso de temporada -->
+  <div class="aviso">🎄 Pedidos navideños: elabora hoy y recibe a tiempo para tus posadas · Envíos en CDMX y zona metropolitana</div>
 
-  <main class="container py-4">
+  <!-- Barra superior: logo, categorías (de la base de datos) y carrito -->
+  <header class="barra">
+    <nav class="navbar navbar-expand-md py-0">
+      <div class="container">
+        <a class="navbar-brand marca" href="{% url 'catalogo:inicio' %}">Moñería</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+          <ul class="navbar-nav me-auto menu">
+            {% for c in categorias_menu %}
+              <li class="nav-item">
+                <a class="nav-link {% if c.slug == 'kits' %}menu-kits{% endif %} {% if categoria_actual == c.slug %}activo{% endif %}"
+                   href="{{ c.get_absolute_url }}">{% if c.slug == 'kits' %}🎁 {% endif %}{{ c.nombre }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+          <!-- El carrito se activa en la siguiente etapa -->
+          <span class="carrito-btn" title="Disponible muy pronto">🛒 Carrito <b>0</b></span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
     {% block contenido %}{% endblock %}
   </main>
 
-  <footer class="pie py-4 mt-5">
-    <div class="container small d-flex flex-wrap justify-content-between gap-2">
-      <span>Moñería · Proyecto de Negocios Electrónicos y Desarrollo Web, FI-UNAM</span>
-      <span>Envíos en CDMX y zona metropolitana</span>
+  <!-- Pie de página con políticas (requisito: cancelación y devolución) -->
+  <footer class="pie">
+    <div class="container pie-grid">
+      <div>
+        <div class="marca">Moñería</div>
+        <p class="mb-0">Moños hechos a mano y prendas navideñas.<br>CDMX y zona metropolitana.</p>
+      </div>
+      <div>
+        <h4>Tienda</h4>
+        {% for c in categorias_menu %}<a href="{{ c.get_absolute_url }}">{{ c.nombre }}</a>{% endfor %}
+      </div>
+      <div>
+        <h4>Ayuda</h4>
+        <a href="{% url 'catalogo:ayuda' %}#envios">Envíos y entregas</a>
+        <a href="{% url 'catalogo:ayuda' %}#devoluciones">Cambios y devoluciones</a>
+        <a href="{% url 'catalogo:ayuda' %}#cancelar">Cancelar un pedido</a>
+      </div>
+      <div>
+        <h4>Proyecto</h4>
+        <p class="mb-0 small">Negocios Electrónicos y Desarrollo Web<br>Facultad de Ingeniería, UNAM</p>
+      </div>
     </div>
   </footer>
 

@@ -8,10 +8,11 @@
 {% endcomment %}
 {% block titulo %}{{ producto.nombre }}{% endblock %}
 {% block contenido %}
-<nav aria-label="Ruta" class="small mb-3">
-  <a href="{% url 'catalogo:lista' %}">Catálogo</a> ›
+<div class="container pb-4">
+<nav aria-label="Ruta" class="miga">
+  <a href="{% url 'catalogo:inicio' %}">Inicio</a> ›
   <a href="{{ producto.categoria.get_absolute_url }}">{{ producto.categoria.nombre }}</a> ›
-  <span class="text-body-secondary">{{ producto.nombre }}</span>
+  <span>{{ producto.nombre }}</span>
 </nav>
 
 <div class="row g-4">
@@ -47,15 +48,22 @@
       <!-- Configuración para simulador.js (capas, mapa y estampados) -->
       {{ config_simulador|json_script:"config-simulador" }}
     {% else %}
-      {% include "catalogo/_imagen.html" with clase="foto-grande" %}
+      <!-- Foto del producto (o dibujo de ejemplo mientras no haya foto) -->
+      <div class="galeria" id="galeria">
+        {% include "catalogo/_imagen.html" %}
+      </div>
     {% endif %}
   </div>
 
   <!-- ===================== Columna derecha: opciones y cotización ===================== -->
   <div class="col-lg-6">
-    <h1 class="h3 titulo">{{ producto.nombre }}</h1>
-    <p>{{ producto.descripcion }}</p>
-    <p class="precio fs-4 mb-3">{% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:2|intcomma }}</p>
+    {% if producto.ahorro %}<span class="etiqueta ahorro">Ahorra ${{ producto.ahorro|floatformat:0 }}</span>{% endif %}
+    <h1 class="titulo h-producto">{{ producto.nombre }}</h1>
+    <p class="precio-grande mb-2">
+      {% if producto.precio_anterior %}<s>${{ producto.precio_anterior|floatformat:0|intcomma }}</s>{% endif %}
+      {% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:2|intcomma }}
+    </p>
+    <p class="text-body-secondary">{{ producto.descripcion }}</p>
 
     <form id="form-cotizar" data-producto="{{ producto.slug }}"
           data-url="{% url 'catalogo:api_cotizar' %}" novalidate>
@@ -167,25 +175,50 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="mb-3">
-          <label for="variante" class="form-label fw-bold">Talla / color</label>
-          <select id="variante" name="variante" class="form-select">
-            {% for v in variantes %}
-              <option value="{{ v.sku }}" {% if v.existencias == 0 %}disabled{% endif %}>
-                {{ v.get_talla_display }}{% if v.color %} · {{ v.color.nombre }}{% endif %}
-                {% if v.precio_extra %} (+${{ v.precio_extra|floatformat:0 }}){% endif %}
-                {% if v.existencias == 0 %} — agotado{% elif v.existencias <= 3 %} — últimas {{ v.existencias }}{% endif %}
-              </option>
-            {% endfor %}
-          </select>
+        <!-- Selector de variante: color y talla como botones (producto.js).
+             El SKU elegido se guarda en el campo oculto "variante" que lee cotizador.js -->
+        <input type="hidden" name="variante" id="variante" value="">
+        {{ config_variantes|json_script:"config-variantes" }}
+
+        <div class="opcion" id="opcion-color" hidden>
+          <div class="opcion-lbl">Color: <span class="fw-normal" id="color-nombre"></span></div>
+          <div class="d-flex flex-wrap gap-2" id="colores"></div>
+        </div>
+        <div class="opcion" id="opcion-talla" hidden>
+          <div class="opcion-lbl d-flex justify-content-between">
+            <span>Talla: <span class="fw-normal" id="talla-nombre"></span></span>
+            {% if producto.categoria.slug == "sueteres" %}
+              <a href="#guia-tallas" data-bs-toggle="collapse" class="small">Guía de tallas</a>
+            {% endif %}
+          </div>
+          <div class="d-flex flex-wrap gap-2" id="tallas"></div>
+          {% if producto.categoria.slug == "sueteres" %}
+            <div class="collapse small mt-2" id="guia-tallas">
+              <table class="table table-sm mb-0">
+                <tr><th>Talla</th><th>Edad / medida aproximada</th></tr>
+                <tr><td>2-4</td><td>Niña de 2 a 4 años</td></tr>
+                <tr><td>6-8</td><td>Niña de 6 a 8 años</td></tr>
+                <tr><td>10-12</td><td>Niña de 10 a 12 años</td></tr>
+                <tr><td>CH / M / G</td><td>Adulto: pecho 88-94 / 96-102 / 104-110 cm</td></tr>
+              </table>
+            </div>
+          {% endif %}
         </div>
       {% endif %}
 
-      <div class="mb-3" style="max-width: 9rem">
-        <label for="cantidad" class="form-label fw-bold">Cantidad</label>
-        <input type="number" id="cantidad" name="cantidad" class="form-control" value="1" min="1" max="50">
+      <div class="opcion">
+        <label for="cantidad" class="opcion-lbl">Cantidad</label>
+        <!-- Botones − / + que cambian el campo de cantidad -->
+        <div class="cant">
+          <button type="button" data-cant="-1" aria-label="Menos">−</button>
+          <input type="number" id="cantidad" name="cantidad" value="1" min="1" max="50">
+          <button type="button" data-cant="1" aria-label="Más">+</button>
+        </div>
       </div>
     </form>
+
+    <!-- Fecha estimada de entrega (catalogo/entregas.py) -->
+    <div class="entrega">📦 {{ texto_entrega }}</div>
 
     <!-- El servidor llena este recuadro con el desglose (cotizador.js) -->
     <div class="cotizacion p-3" id="cotizacion" aria-live="polite">
@@ -193,10 +226,25 @@
       <div id="cotizacion-cuerpo" class="small text-body-secondary">Calculando…</div>
     </div>
 
-    <button class="btn btn-tienda w-100 mt-3" disabled title="Se habilita cuando esté listo el carrito">
+    <button class="btn btn-tienda btn-lg w-100 mt-3" disabled title="Se habilita cuando esté listo el carrito">
       Agregar al carrito (próximamente)
     </button>
+    <div class="small text-body-secondary mt-2">
+      ↺ {% if producto.personalizable %}Hecho sobre pedido{% elif producto.categoria.slug == 'monos' %}Devolución si llega sin usar{% else %}Cambio de talla sin costo{% endif %} ·
+      <a href="{% url 'catalogo:ayuda' %}#devoluciones">política de devoluciones</a>
+    </div>
   </div>
+</div>
+
+<!-- Productos para combinar (de otras categorías) -->
+{% if combina %}
+  <section class="seccion">
+    <h2 class="titulo h4">Combínalo con…</h2>
+    <div class="productos productos-4">
+      {% for producto in combina %}{% include "catalogo/_tarjeta.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
 </div>
 {% endblock %}
 
@@ -207,5 +255,17 @@
   <!-- Pasos, "Lo más vendido" y "Restablecer" -->
   <script src="{% static 'js/personalizador.js' %}?v={{ version_estaticos }}"></script>
 {% endif %}
+{% if not producto.personalizable %}
+  <!-- Botones de color y talla de los productos de catálogo -->
+  <script src="{% static 'js/producto.js' %}?v={{ version_estaticos }}"></script>
+{% endif %}
 <script src="{% static 'js/cotizador.js' %}?v={{ version_estaticos }}"></script>
+<script>
+  // Botones − / + de la cantidad: cambian el número y avisan para recotizar.
+  document.querySelectorAll("[data-cant]").forEach((b) => b.addEventListener("click", () => {
+    const campo = document.getElementById("cantidad");
+    campo.value = Math.min(50, Math.max(1, Number(campo.value) + Number(b.dataset.cant)));
+    campo.dispatchEvent(new Event("input", { bubbles: true }));
+  }));
+</script>
 {% endblock %}
