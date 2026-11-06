@@ -50,7 +50,7 @@ def test_kits_tienen_descuento():
 def test_portada_muestra_categorias_y_kits(client):
     html = client.get(reverse("catalogo:inicio")).content.decode()
     assert "Compra por categoría" in html
-    assert "Kits navideños a juego" in html
+    assert "Kits navideños" in html
     assert "Suéteres navideños" in html
 
 
@@ -58,7 +58,7 @@ def test_filtro_por_color(client):
     verde = Color.objects.get(nombre="Verde pino")
     r = client.get(reverse("catalogo:categoria", args=["sueteres"]), {"color": verde.pk})
     nombres = [p.nombre for p in r.context["productos"]]
-    assert "Suéter Copos" in nombres and "Suéter Reno" in nombres  # el Reno también viene en verde
+    assert nombres == ["Suéter Osito"]
 
 
 def test_filtro_por_talla_adulto(client):
@@ -67,9 +67,9 @@ def test_filtro_por_talla_adulto(client):
 
 
 def test_pagina_de_sueter_trae_variantes_y_entrega(client):
-    r = client.get(reverse("catalogo:producto", args=["sueter-reno"]))
+    r = client.get(reverse("catalogo:producto", args=["sueter-osito"]))
     config = r.context["config_variantes"]
-    assert len(config["colores"]) == 2
+    assert len(config["colores"]) == 1
     assert any(v["existencias"] == 0 for v in config["variantes"])  # hay una talla agotada
     assert "Si pides hoy" in r.content.decode()
 

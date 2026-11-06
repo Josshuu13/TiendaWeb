@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load moneda %}
+{% block titulo %}Pago de prueba{% endblock %}
+{% block contenido %}
+<div class="contenedor-angosto">
+  <div class="panel tarjeta-cuenta">
+    <h1>Pago de prueba</h1>
+    <p class="banda-prueba">Simulador para desarrollo. Con llaves de Stripe, aquí aparece la página de pago real en modo de pruebas.</p>
+    <dl class="datos">
+      <dt>Pedido</dt><dd>{{ pedido.folio }}</dd>
+      <dt>Total</dt><dd>{{ pedido.total|pesos }}</dd>
+    </dl>
+    <p></p>
+    <form method="post" class="fila">
+      {% csrf_token %}
+      <button class="btn btn-primario" name="resultado" value="aprobar">Aprobar pago</button>
+      <button class="btn btn-suave" name="resultado" value="rechazar">Rechazar pago</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

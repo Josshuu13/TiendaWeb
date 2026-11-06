@@ -1,22 +1,22 @@
-{% load humanize %}
+{% load moneda %}
 {% comment %} Tarjeta de producto para las listas (categorías y "Combínalo con…"). {% endcomment %}
 <a href="{{ producto.get_absolute_url }}" class="prod">
   <div class="prod-img">
     {% if producto.personalizable %}<span class="etiqueta nuevo">Personalizable</span>
     {% elif not producto.disponible %}<span class="etiqueta agotado">Agotado</span>
-    {% elif producto.ahorro %}<span class="etiqueta ahorro">Ahorra ${{ producto.ahorro|floatformat:0 }}</span>{% endif %}
+    {% elif producto.ahorro %}<span class="etiqueta ahorro">Ahorra {{ producto.ahorro|pesos }}</span>{% endif %}
     {% include "catalogo/_imagen.html" %}
   </div>
   <div class="prod-cuerpo">
     {% with colores=producto.colores_disponibles %}
-      {% if colores|length > 0 and not producto.personalizable and producto.categoria.slug != 'kits' %}
+      {% if colores|length > 1 and not producto.personalizable %}
         <div class="puntos">{% for c in colores %}<i style="background: {{ c.codigo_hex }}" title="{{ c.nombre }}"></i>{% endfor %}</div>
       {% endif %}
     {% endwith %}
     <h3>{{ producto.nombre }}</h3>
-    <div>
-      {% if producto.precio_anterior %}<s>${{ producto.precio_anterior|floatformat:0|intcomma }}</s>{% endif %}
-      <b>{% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:0|intcomma }}</b>
+    <div class="prod-precio">
+      {% if producto.precio_anterior %}<s>{{ producto.precio_anterior|pesos }}</s>{% endif %}
+      {% if producto.personalizable %}Desde {% endif %}{{ producto.precio_base|pesos }}
     </div>
   </div>
 </a>

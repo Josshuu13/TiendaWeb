@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static humanize %}
+{% load static moneda %}
 {% comment %}
   Página de producto.
   - Moño personalizable: a la izquierda el simulador (canvas) y a la derecha las
@@ -7,17 +7,22 @@
   - Producto de catálogo: foto, selector de talla/color y cotización.
 {% endcomment %}
 {% block titulo %}{{ producto.nombre }}{% endblock %}
+{% block og_titulo %}{{ producto.nombre }} · {{ nombre_tienda }}{% endblock %}
+{% block descripcion %}{{ producto.descripcion|truncatechars:155 }}{% endblock %}
+{% block cabecera %}<script type="application/ld+json">{{ datos_estructurados }}</script>{% endblock %}
 {% block contenido %}
-<div class="container pb-4">
+<div class="contenedor">
 <nav aria-label="Ruta" class="miga">
-  <a href="{% url 'catalogo:inicio' %}">Inicio</a> ›
-  <a href="{{ producto.categoria.get_absolute_url }}">{{ producto.categoria.nombre }}</a> ›
-  <span>{{ producto.nombre }}</span>
+  <ol>
+    <li><a href="{% url 'catalogo:inicio' %}">Inicio</a></li>
+    <li><a href="{{ producto.categoria.get_absolute_url }}">{{ producto.categoria.nombre }}</a></li>
+    <li aria-current="page">{{ producto.nombre }}</li>
+  </ol>
 </nav>
 
-<div class="row g-4">
+<div class="producto-grid">
   <!-- ===================== Columna izquierda: simulador o foto ===================== -->
-  <div class="col-lg-6">
+  <div>
     {% if producto.personalizable %}
       <!-- La columna se queda fija al bajar por las opciones (sticky), para ver
            siempre el moño mientras se eligen colores -->
@@ -34,13 +39,13 @@
 
           <!-- Controles de zoom -->
           <div class="simulador-zoom" role="group" aria-label="Zoom del moño">
-            <button type="button" class="btn btn-sm btn-light" data-zoom="-" title="Alejar" aria-label="Alejar">−</button>
-            <span id="zoom-valor" class="small text-body-secondary">100 %</span>
-            <button type="button" class="btn btn-sm btn-light" data-zoom="+" title="Acercar" aria-label="Acercar">+</button>
-            <button type="button" class="btn btn-sm btn-light" data-zoom="0" title="Ver completo">Ver completo</button>
+            <button type="button" class="btn btn-sm btn-suave" data-zoom="-" title="Alejar" aria-label="Alejar">−</button>
+            <span id="zoom-valor" class="nota">100 %</span>
+            <button type="button" class="btn btn-sm btn-suave" data-zoom="+" title="Acercar" aria-label="Acercar">+</button>
+            <button type="button" class="btn btn-sm btn-suave" data-zoom="0" title="Ver completo">Ver completo</button>
           </div>
         </div>
-        <p class="small text-body-secondary text-center mt-2 mb-0">
+        <p class="nota centrado">
           Usa + y − o la rueda del mouse para acercar, y arrastra para mover el moño.
           El tono puede variar ligeramente según tu pantalla.
         </p>
@@ -49,21 +54,23 @@
       {{ config_simulador|json_script:"config-simulador" }}
     {% else %}
       <!-- Foto del producto (o dibujo de ejemplo mientras no haya foto) -->
-      <div class="galeria" id="galeria">
-        {% include "catalogo/_imagen.html" %}
+      <div class="galeria-fija">
+        <div class="galeria" id="galeria">
+          {% include "catalogo/_imagen.html" %}
+        </div>
       </div>
     {% endif %}
   </div>
 
   <!-- ===================== Columna derecha: opciones y cotización ===================== -->
-  <div class="col-lg-6">
-    {% if producto.ahorro %}<span class="etiqueta ahorro">Ahorra ${{ producto.ahorro|floatformat:0 }}</span>{% endif %}
-    <h1 class="titulo h-producto">{{ producto.nombre }}</h1>
-    <p class="precio-grande mb-2">
-      {% if producto.precio_anterior %}<s>${{ producto.precio_anterior|floatformat:0|intcomma }}</s>{% endif %}
-      {% if producto.personalizable %}Desde {% endif %}${{ producto.precio_base|floatformat:2|intcomma }}
+  <div>
+    {% if producto.ahorro %}<span class="etiqueta ahorro">Ahorra {{ producto.ahorro|pesos }}</span>{% endif %}
+    <h1 class="h-producto">{{ producto.nombre }}</h1>
+    <p class="precio-grande">
+      {% if producto.precio_anterior %}<s>{{ producto.precio_anterior|pesos }}</s>{% endif %}
+      {% if producto.personalizable %}Desde {% endif %}{{ producto.precio_base|pesos }}
     </p>
-    <p class="text-body-secondary">{{ producto.descripcion }}</p>
+    <p class="descripcion">{{ producto.descripcion }}</p>
 
     <form id="form-cotizar" data-producto="{{ producto.slug }}"
           data-url="{% url 'catalogo:api_cotizar' %}" novalidate>
@@ -74,14 +81,14 @@
         <div id="personalizador" data-total="{{ total_pasos }}">
 
           <!-- Encabezado: paso actual + botones generales -->
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-            <span class="small text-body-secondary" id="paso-texto">Paso 1 de {{ total_pasos }}</span>
-            <div class="d-flex gap-2">
+          <div class="personalizador-encabezado">
+            <span class="nota" id="paso-texto">Paso 1 de {{ total_pasos }}</span>
+            <div class="fila">
               {% if combinaciones %}
                 <button type="button" class="btn btn-sm btn-vendido" id="btn-vendido"
                         aria-expanded="false" aria-controls="vendidos">★ Lo más vendido</button>
               {% endif %}
-              <button type="button" class="btn btn-sm btn-light border" id="btn-restablecer"
+              <button type="button" class="btn btn-sm btn-suave" id="btn-restablecer"
                       title="Regresar el moño a sus colores originales">↺ Restablecer</button>
             </div>
           </div>
@@ -89,7 +96,7 @@
           <!-- "Lo más vendido": combinaciones listas (se ocultan hasta dar clic) -->
           {% if combinaciones %}
             <div class="vendidos" id="vendidos" hidden>
-              <div class="small text-body-secondary mb-2">Elige una combinación y ajústala si quieres:</div>
+              <div class="nota">Elige una combinación y ajústala si quieres:</div>
               <div class="vendidos-lista">
                 {% for c in combinaciones %}
                   <button type="button" class="combo" data-combo="{{ forloop.counter0 }}">
@@ -123,15 +130,15 @@
           {% for item in partes %}
             {% with parte=item.parte %}
             <div class="parte-panel" data-panel="{{ item.numero }}" role="tabpanel" {% if not forloop.first %}hidden{% endif %}>
-              <h2 class="h6 fw-bold mb-1">Color de {{ parte.nombre|lower }}:
-                <span class="fw-normal text-body-secondary" data-nombre-color="{{ parte.clave }}"></span></h2>
+              <h2 class="subtitulo">Color de {{ parte.nombre|lower }}:
+                <span class="nota" data-nombre-color="{{ parte.clave }}"></span></h2>
 
               {% if parte.admite_estampado and estampados %}
                 <!-- El decorado puede ser liso (con color) o un listón estampado -->
-                <div class="small text-body-secondary mt-2 mb-1">Tipo de decorado</div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="grupo-colores">Tipo de decorado</div>
+                <div class="fila">
                   <input type="radio" class="btn-check" name="estampado" value="" id="est-liso" checked>
-                  <label class="btn btn-sm btn-outline-secondary" for="est-liso">Liso</label>
+                  <label class="opcion-liso" for="est-liso">Liso</label>
                   {% for e in estampados %}
                     <input type="radio" class="btn-check" name="estampado" value="{{ e.clave }}" id="est-{{ e.clave }}">
                     <label class="opcion-estampado" for="est-{{ e.clave }}" title="{{ e.nombre }}">
@@ -145,8 +152,8 @@
               <!-- Colores de la parte, agrupados (Escolares, Navideños, Básicos) -->
               <div {% if parte.admite_estampado %}data-colores-estampable{% endif %}>
                 {% for grupo in item.grupos %}
-                  <div class="small text-body-secondary mt-2 mb-1">{{ grupo.nombre }}</div>
-                  <div class="d-flex flex-wrap gap-2">
+                  <div class="grupo-colores">{{ grupo.nombre }}</div>
+                  <div class="fila">
                     {% for color in grupo.colores %}
                       <input type="radio" class="btn-check" name="{{ parte.clave }}" value="{{ color.pk }}"
                              id="{{ parte.clave }}-{{ color.pk }}" data-hex="{{ color.codigo_hex }}"
@@ -160,13 +167,13 @@
 
               <!-- Navegación entre pasos -->
               <div class="parte-navegar">
-                <button type="button" class="btn btn-sm btn-light border" data-ir="anterior"
+                <button type="button" class="btn btn-sm btn-suave" data-ir="anterior"
                         {% if forloop.first %}disabled{% endif %}>← Anterior</button>
                 {% if forloop.last %}
-                  <button type="button" class="btn btn-sm btn-tienda" data-ir="listo">✓ Listo, ver total</button>
+                  <button type="button" class="btn btn-sm btn-primario" data-ir="listo">Listo, ver total</button>
                 {% else %}
-                  <button type="button" class="btn btn-sm btn-tienda" data-ir="siguiente">
-                    Siguiente: {{ item.siguiente }} →
+                  <button type="button" class="btn btn-sm btn-primario" data-ir="siguiente">
+                    Siguiente: {{ item.siguiente }}
                   </button>
                 {% endif %}
               </div>
@@ -181,27 +188,17 @@
         {{ config_variantes|json_script:"config-variantes" }}
 
         <div class="opcion" id="opcion-color" hidden>
-          <div class="opcion-lbl">Color: <span class="fw-normal" id="color-nombre"></span></div>
-          <div class="d-flex flex-wrap gap-2" id="colores"></div>
+          <div class="opcion-lbl">Color: <span id="color-nombre"></span></div>
+          <div class="fila" id="colores"></div>
         </div>
         <div class="opcion" id="opcion-talla" hidden>
-          <div class="opcion-lbl d-flex justify-content-between">
-            <span>Talla: <span class="fw-normal" id="talla-nombre"></span></span>
-            {% if producto.categoria.slug == "sueteres" %}
-              <a href="#guia-tallas" data-bs-toggle="collapse" class="small">Guía de tallas</a>
-            {% endif %}
-          </div>
-          <div class="d-flex flex-wrap gap-2" id="tallas"></div>
-          {% if producto.categoria.slug == "sueteres" %}
-            <div class="collapse small mt-2" id="guia-tallas">
-              <table class="table table-sm mb-0">
-                <tr><th>Talla</th><th>Edad / medida aproximada</th></tr>
-                <tr><td>2-4</td><td>Niña de 2 a 4 años</td></tr>
-                <tr><td>6-8</td><td>Niña de 6 a 8 años</td></tr>
-                <tr><td>10-12</td><td>Niña de 10 a 12 años</td></tr>
-                <tr><td>CH / M / G</td><td>Adulto: pecho 88-94 / 96-102 / 104-110 cm</td></tr>
-              </table>
-            </div>
+          <div class="opcion-lbl">Talla: <span id="talla-nombre"></span></div>
+          <div class="fila" id="tallas"></div>
+          {% if producto.categoria.guia_tallas %}
+            <details class="guia-tallas">
+              <summary>Guía de tallas</summary>
+              {{ producto.categoria.guia_tallas|linebreaks }}
+            </details>
           {% endif %}
         </div>
       {% endif %}
@@ -218,29 +215,37 @@
     </form>
 
     <!-- Fecha estimada de entrega (catalogo/entregas.py) -->
-    <div class="entrega">📦 {{ texto_entrega }}</div>
+    <div class="entrega">
+      <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#camion"/></svg>
+      <span>{{ texto_entrega }}</span>
+    </div>
 
     <!-- El servidor llena este recuadro con el desglose (cotizador.js) -->
-    <div class="cotizacion p-3" id="cotizacion" aria-live="polite">
-      <h2 class="h6 fw-bold">Tu cotización</h2>
-      <div id="cotizacion-cuerpo" class="small text-body-secondary">Calculando…</div>
+    <div class="cotizacion" id="cotizacion" aria-live="polite">
+      <h2 class="subtitulo">Tu cotización</h2>
+      <div id="cotizacion-cuerpo" class="nota">Calculando…</div>
     </div>
 
-    <button class="btn btn-tienda btn-lg w-100 mt-3" disabled title="Se habilita cuando esté listo el carrito">
-      Agregar al carrito (próximamente)
+    <p></p>
+    <button type="button" class="btn btn-primario btn-grande btn-bloque" id="btn-carrito"
+            data-url="{% url 'carrito:agregar' %}" {% if not producto.disponible %}disabled{% endif %}>
+      {% if producto.disponible %}Agregar al carrito{% else %}Agotado{% endif %}
     </button>
-    <div class="small text-body-secondary mt-2">
-      ↺ {% if producto.personalizable %}Hecho sobre pedido{% elif producto.categoria.slug == 'monos' %}Devolución si llega sin usar{% else %}Cambio de talla sin costo{% endif %} ·
-      <a href="{% url 'catalogo:ayuda' %}#devoluciones">política de devoluciones</a>
+    <div class="aviso-carrito" id="aviso-carrito" role="status" hidden>
+      Agregado a tu carrito. <a href="{% url 'carrito:ver' %}">Ver carrito</a>
     </div>
+    <p class="nota">
+      {% if producto.personalizable %}Hecho sobre pedido{% else %}Devolución si llega sin usar{% endif %} ·
+      <a href="{% url 'catalogo:ayuda' %}#devoluciones">política de devoluciones</a>
+    </p>
   </div>
 </div>
 
 <!-- Productos para combinar (de otras categorías) -->
 {% if combina %}
   <section class="seccion">
-    <h2 class="titulo h4">Combínalo con…</h2>
-    <div class="productos productos-4">
+    <h2 class="titulo-seccion">Combínalo con… <span>Piezas que van a juego.</span></h2>
+    <div class="productos">
       {% for producto in combina %}{% include "catalogo/_tarjeta.html" %}{% endfor %}
     </div>
   </section>
@@ -260,12 +265,5 @@
   <script src="{% static 'js/producto.js' %}?v={{ version_estaticos }}"></script>
 {% endif %}
 <script src="{% static 'js/cotizador.js' %}?v={{ version_estaticos }}"></script>
-<script>
-  // Botones − / + de la cantidad: cambian el número y avisan para recotizar.
-  document.querySelectorAll("[data-cant]").forEach((b) => b.addEventListener("click", () => {
-    const campo = document.getElementById("cantidad");
-    campo.value = Math.min(50, Math.max(1, Number(campo.value) + Number(b.dataset.cant)));
-    campo.dispatchEvent(new Event("input", { bubbles: true }));
-  }));
-</script>
+<script src="{% static 'js/cantidad.js' %}?v={{ version_estaticos }}"></script>
 {% endblock %}

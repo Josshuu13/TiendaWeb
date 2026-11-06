@@ -1,0 +1,8 @@
+{% load static %}
+{% comment %} Ícono del carrito. HTMX lo vuelve a pedir cuando ocurre "carrito-cambiado". {% endcomment %}
+<a class="barra-icono" id="contador-carrito" href="{% url 'carrito:ver' %}"
+   aria-label="Carrito, {{ carrito_piezas }} {{ carrito_piezas|pluralize:'pieza,piezas' }}"
+   hx-get="{% url 'carrito:contador' %}" hx-trigger="carrito-cambiado from:body" hx-swap="outerHTML">
+  <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#carrito"/></svg>
+  {% if carrito_piezas %}<b>{{ carrito_piezas }}</b>{% endif %}
+</a>

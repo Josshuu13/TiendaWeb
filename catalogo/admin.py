@@ -4,16 +4,17 @@ Panel de administración (/admin/).
 Aquí se configura qué ve el equipo de la tienda: listas, filtros y campos editables.
 Django genera los formularios a partir de los modelos.
 """
+from django.conf import settings
 from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (
-    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, Producto, Variante,
+    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, Producto, Temporada, Variante,
 )
 
 # Textos del encabezado del panel.
-admin.site.site_header = "Moñería – Administración"
-admin.site.site_title = "Moñería"
+admin.site.site_header = f"{settings.NOMBRE_TIENDA} – Administración"
+admin.site.site_title = settings.NOMBRE_TIENDA
 admin.site.index_title = "Panel de la tienda"
 
 
@@ -118,3 +119,20 @@ class CombinacionAdmin(admin.ModelAdmin):
     list_display = ["nombre", "producto", "estampado", "activa", "orden"]
     list_editable = ["activa", "orden"]
     inlines = [CombinacionParteInline]
+
+
+@admin.register(Temporada)
+class TemporadaAdmin(admin.ModelAdmin):
+    """Aquí se cambia la campaña de la portada sin programar."""
+
+    list_display = ["nombre", "activa", "inicio", "fin", "orden"]
+    list_editable = ["activa", "orden"]
+    prepopulated_fields = {"slug": ["nombre"]}
+    filter_horizontal = ["productos"]
+    fieldsets = [
+        ("Temporada", {"fields": ["nombre", "slug", "activa", "inicio", "fin", "orden"]}),
+        ("Portada", {"fields": [
+            "aviso", "etiqueta", "titulo", "descripcion", "imagen", "producto_principal", "boton_texto",
+        ]}),
+        ("Productos", {"fields": ["productos"]}),
+    ]

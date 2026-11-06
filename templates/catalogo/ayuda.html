@@ -1,40 +1,61 @@
 {% extends "base.html" %}
+{% load static moneda %}
 {% comment %}
-  Página de ayuda con las políticas de envío, cambios/devoluciones y cancelación.
-  Los textos son las políticas acordadas por el equipo; ajústenlos si cambian.
+  Página de ayuda con el soporte técnico y las políticas de envío, cambios/devoluciones
+  y cancelación. Los textos son las políticas acordadas por el equipo; ajústenlos si cambian.
 {% endcomment %}
-{% block titulo %}Ayuda y políticas{% endblock %}
+{% block titulo %}Soporte y políticas{% endblock %}
+{% block descripcion %}Soporte técnico, envíos, cambios, devoluciones y cancelación de pedidos en {{ nombre_tienda }}.{% endblock %}
 {% block contenido %}
-<div class="container ayuda">
-  <div class="miga"><a href="{% url 'catalogo:inicio' %}">Inicio</a> › Ayuda</div>
-  <h1 class="titulo h-pagina">Ayuda y políticas</h1>
+<div class="contenedor-angosto texto">
+  <nav aria-label="Ruta" class="miga">
+    <ol>
+      <li><a href="{% url 'catalogo:inicio' %}">Inicio</a></li>
+      <li aria-current="page">Soporte</li>
+    </ol>
+  </nav>
+  <h1 class="h-pagina">Soporte y políticas</h1>
+
+  <section id="soporte" class="tarjeta-texto">
+    <h2>Soporte técnico</h2>
+    <p>¿Tienes un problema con tu pedido o con la página? Escríbenos e incluye tu ID de pedido, que empieza con PR.</p>
+    <div class="fila">
+      <a class="btn btn-primario" href="{{ tienda.enlace_whatsapp }}" target="_blank" rel="noopener">
+        <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#whatsapp"/></svg>Escribir por WhatsApp</a>
+      <a class="btn btn-secundario" href="tel:+52{{ tienda.telefono_soporte }}">
+        <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#telefono"/></svg>{{ tienda.telefono_soporte|telefono }}</a>
+    </div>
+    <p class="nota">{{ tienda.horario_soporte }}</p>
+  </section>
 
   <section id="envios" class="tarjeta-texto">
-    <h2 class="titulo">📦 Envíos y entregas</h2>
+    <h2>Envíos y entregas</h2>
     <ul>
-      <li>Enviamos a la Ciudad de México y su zona metropolitana.</li>
+      <li>Enviamos a todo México con una tarifa fija de {{ tienda.costo_envio|pesos }}.</li>
       <li>La fecha de entrega se calcula con los días de elaboración del producto más {{ dias_envio }} días hábiles de envío.
           Te la mostramos antes de pagar.</li>
       <li>Si tu pedido tiene varios productos, la fecha la marca el que tarda más en estar listo.</li>
       <li>Los moños personalizados se elaboran sobre pedido.</li>
+      <li>En <a href="{% url 'pedidos:lista' %}">Mis pedidos</a> puedes seguir tu entrega, con el transportista y el número de guía.</li>
     </ul>
   </section>
 
   <section id="devoluciones" class="tarjeta-texto">
-    <h2 class="titulo">↺ Cambios y devoluciones</h2>
+    <h2>Cambios y devoluciones</h2>
     <ul>
       <li><b>Suéteres y calcetines:</b> cambio de talla sin costo y devolución si el producto llega sin usar, con su etiqueta.</li>
       <li><b>Productos de catálogo</b> (como el moño escolar): se aceptan devoluciones si llegan sin usar.</li>
       <li><b>Moños personalizados:</b> como se hacen con los colores que elegiste, solo se reponen o devuelven por defecto de fabricación.</li>
+      <li>Solicita tu devolución desde <a href="{% url 'pedidos:lista' %}">Mis pedidos</a> cuando el pedido aparezca como entregado.</li>
     </ul>
   </section>
 
   <section id="cancelar" class="tarjeta-texto">
-    <h2 class="titulo">✕ Cancelar un pedido</h2>
+    <h2>Cancelar un pedido</h2>
     <ul>
       <li>Puedes cancelar <b>sin costo</b> mientras tu pedido no haya entrado a elaboración.</li>
-      <li>Una vez en elaboración, los productos personalizados ya no se pueden cancelar.</li>
-      <li>Podrás solicitar la cancelación desde <i>Mis pedidos</i> (disponible muy pronto).</li>
+      <li>Una vez en elaboración, los pedidos ya no se pueden cancelar.</li>
+      <li>Solicita la cancelación desde <a href="{% url 'pedidos:lista' %}">Mis pedidos</a>.</li>
     </ul>
   </section>
 </div>

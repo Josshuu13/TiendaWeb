@@ -1,7 +1,7 @@
 """
 Modelos del catálogo (tablas de la base de datos).
 
-Categoria   -> Moños, Suéteres navideños, Calcetines, Kits navideños.
+Categoria   -> agrupa productos en el menú. Se crean desde el admin.
 Producto    -> lo que se muestra en el catálogo (precio base y días de elaboración).
 Variante    -> combinación vendible con existencias (talla y/o color). La usan los
                productos de catálogo: suéteres, calcetines y el moño "tal cual".
@@ -13,11 +13,18 @@ Estampado   -> listón decorado (cuadros, rombos...) que puede usarse en el deco
                en lugar de un color liso. Solo necesita UNA foto del listón, recta.
 Combinacion -> combinación de colores lista para usar ("Lo más vendido"). Con un
                clic el cliente pinta todas las partes del moño.
+Temporada   -> campaña de la portada: textos, imagen, fechas y productos. Cambiar de
+               temporada no requiere programar.
 """
+import secrets
+
+from django.contrib.staticfiles import finders
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+from django.db.models import Q
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils import timezone
 
 # Valida que el color tenga el formato #RRGGBB (por ejemplo #B3122E).
 validador_hex = RegexValidator(
@@ -32,6 +39,10 @@ class Categoria(models.Model):
     nombre = models.CharField(max_length=60, unique=True)
     slug = models.SlugField(max_length=60, unique=True)  # versión para URL: "sueteres"
     descripcion = models.TextField(blank=True)
+    guia_tallas = models.TextField(
+        "guía de tallas", blank=True,
+        help_text="Opcional. Se muestra en los productos de esta categoría, un dato por renglón.",
+    )
     orden = models.PositiveSmallIntegerField(default=0)  # orden en el menú
 
     class Meta:
@@ -149,6 +160,15 @@ class Producto(models.Model):
         return colores[0].codigo_hex if colores else "#B3122E"
 
     @property
+    def url_imagen_estatica(self):
+        """Imagen guardada en el repositorio: static/img/<categoria>/<slug>.webp.
+
+        Devuelve "" si no existe, y entonces se usa el dibujo de ejemplo.
+        """
+        ruta = f"img/{self.categoria.slug}/{self.slug}.webp"
+        return static(ruta) if finders.find(ruta) else ""
+
+    @property
     def carpeta_simulador(self):
         """Carpeta de archivos estáticos con las capas del simulador de este producto."""
         return f"simulador/{self.slug}/"
@@ -175,7 +195,10 @@ class Variante(models.Model):
     color = models.ForeignKey(
         Color, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
     )
-    sku = models.CharField(max_length=40, unique=True)  # código único de inventario
+    sku = models.CharField(
+        max_length=40, unique=True, null=True, blank=True,
+        help_text="Código único de inventario. Si lo dejas vacío, se genera solo.",
+    )
     existencias = models.PositiveIntegerField(default=0)
     precio_extra = models.DecimalField(
         max_digits=8, decimal_places=2, default=0,
@@ -191,6 +214,19 @@ class Variante(models.Model):
                 fields=["producto", "talla", "color"], name="variante_unica"
             )
         ]
+
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            self.sku = self._generar_sku()
+        super().save(*args, **kwargs)
+
+    def _generar_sku(self):
+        """Arma el código con producto, talla y color; agrega azar si ya existe."""
+        color = "".join(p[:3] for p in self.color.nombre.split()).upper() if self.color else "STD"
+        sku = f"{self.producto.slug.upper()[:20]}-{self.talla}-{color}"
+        if Variante.objects.filter(sku=sku).exists():
+            sku = f"{sku}-{secrets.token_hex(2).upper()}"
+        return sku
 
     def __str__(self):
         partes = [self.producto.nombre, self.get_talla_display()]
@@ -360,3 +396,63 @@ class CombinacionParte(models.Model):
 
     def __str__(self):
         return f"{self.parte.nombre}: {self.color.nombre}"
+
+
+class Temporada(models.Model):
+    """
+    Campaña que se ve en la portada: Navidad, regreso a clases, Día de las Madres...
+
+    Se muestra la primera que esté activa y dentro de sus fechas. Si las fechas se dejan
+    vacías, solo depende de la casilla "activa". Con fechas, cada temporada puede
+    prepararse antes y entra y sale sola.
+    """
+
+    nombre = models.CharField(max_length=60)  # "Navidad 2026"
+    slug = models.SlugField(max_length=60, unique=True)
+    activa = models.BooleanField(default=False)
+    inicio = models.DateField(null=True, blank=True, help_text="Opcional. Primer día en que se muestra.")
+    fin = models.DateField(null=True, blank=True, help_text="Opcional. Último día en que se muestra.")
+    aviso = models.CharField(
+        max_length=140, blank=True, help_text="Texto de la franja superior de todas las páginas.",
+    )
+    etiqueta = models.CharField(max_length=60, blank=True, help_text="Texto pequeño arriba del título.")
+    titulo = models.CharField("título", max_length=90)
+    descripcion = models.TextField("descripción", blank=True)
+    imagen = models.ImageField(
+        upload_to="temporadas/", blank=True,
+        help_text="Imagen de la portada. Si se deja vacía, se usa static/img/temporadas/<slug>.webp.",
+    )
+    producto_principal = models.ForeignKey(
+        Producto, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+        help_text="Opcional. Producto al que lleva el botón principal.",
+    )
+    boton_texto = models.CharField("texto del botón", max_length=40, default="Ver producto")
+    productos = models.ManyToManyField(Producto, blank=True, related_name="temporadas")
+    orden = models.PositiveSmallIntegerField(default=0, help_text="Si dos coinciden, se muestra la de menor orden.")
+
+    class Meta:
+        ordering = ["orden", "nombre"]
+
+    def __str__(self):
+        return self.nombre
+
+    def get_absolute_url(self):
+        return reverse("catalogo:temporada", args=[self.slug])
+
+    @classmethod
+    def actual(cls):
+        """Temporada vigente hoy, o None si no hay ninguna."""
+        hoy = timezone.localdate()
+        return cls.objects.filter(
+            Q(inicio__isnull=True) | Q(inicio__lte=hoy),
+            Q(fin__isnull=True) | Q(fin__gte=hoy),
+            activa=True,
+        ).select_related("producto_principal").first()
+
+    @property
+    def url_imagen(self):
+        """Imagen subida en el admin o, si no hay, la estática con el nombre del slug."""
+        if self.imagen:
+            return self.imagen.url
+        ruta = f"img/temporadas/{self.slug}.webp"
+        return static(ruta) if finders.find(ruta) else ""

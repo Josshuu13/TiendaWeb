@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}Términos y condiciones{% endblock %}
+{% block contenido %}
+<div class="contenedor-angosto texto">
+  <h1 class="h-pagina">Términos y condiciones</h1>
+  <section class="tarjeta-texto">
+    <h2>Tienda de demostración</h2>
+    <ul>
+      <li>{{ nombre_tienda }} es un proyecto académico. No se venden productos reales ni se realizan entregas.</li>
+      <li>Los pagos son de prueba: no captures una tarjeta real.</li>
+      <li>Los precios, existencias, transportistas y teléfonos son de ejemplo.</li>
+      <li>Las imágenes de los suéteres se generaron con inteligencia artificial como referencia visual.</li>
+    </ul>
+  </section>
+  <section class="tarjeta-texto">
+    <h2>Políticas de compra</h2>
+    <p>Las reglas de envío, devolución y cancelación que se simulan están en la <a href="{% url 'catalogo:ayuda' %}">página de soporte</a>.</p>
+  </section>
+</div>
+{% endblock %}

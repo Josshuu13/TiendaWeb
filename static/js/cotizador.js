@@ -8,6 +8,9 @@
  *
  * Además emite el evento "seleccion-cambiada" con los colores y el estampado
  * elegidos, para que el simulador (simulador.js) redibuje el moño.
+ *
+ * El botón "Agregar al carrito" manda esa misma selección al servidor. El moño
+ * personalizado incluye una imagen de referencia, que el servidor revisa.
  */
 (function () {
   const form = document.getElementById("form-cotizar");
@@ -58,17 +61,17 @@
   /** Dibuja la tabla del desglose con formato de pesos mexicanos. */
   function pintarCotizacion(r) {
     const filas = r.conceptos
-      .map((c) => `<tr><td>${c.descripcion}</td><td class="text-end">${pesos.format(c.importe)}</td></tr>`)
+      .map((c) => `<tr><td>${c.descripcion}</td><td>${pesos.format(c.importe)}</td></tr>`)
       .join("");
     const plural = r.dias_elaboracion === 1 ? "día" : "días";
-    cuerpo.className = "small";
+    cuerpo.className = "nota";
     cuerpo.innerHTML = `
-      <table class="table table-sm mb-2"><tbody>${filas}
-        <tr><td>Precio por pieza</td><td class="text-end">${pesos.format(r.precio_unitario)}</td></tr>
-        <tr><td>Cantidad</td><td class="text-end">× ${r.cantidad}</td></tr>
-        <tr class="fw-bold"><td>Total</td><td class="text-end">${pesos.format(r.total)}</td></tr>
+      <table class="tabla-importes"><tbody>${filas}
+        <tr><td>Precio por pieza</td><td>${pesos.format(r.precio_unitario)}</td></tr>
+        <tr><td>Cantidad</td><td>× ${r.cantidad}</td></tr>
+        <tr class="fila-total"><td>Total</td><td>${pesos.format(r.total)}</td></tr>
       </tbody></table>
-      <div class="text-body-secondary">${
+      <div>${
         r.dias_elaboracion
           ? `Elaboración: ${r.dias_elaboracion} ${plural} hábiles + envío.`
           : "Listo para enviar."
@@ -76,7 +79,7 @@
   }
 
   function pintarError(mensaje) {
-    cuerpo.className = "small text-danger";
+    cuerpo.className = "nota texto-error";
     cuerpo.textContent = mensaje;
   }
 
@@ -111,10 +114,10 @@
       if (hayEstampado && colores) {
         el.textContent = form.querySelector(`label[for="${estampado.id}"]`).title;
         if (punto) punto.style.background = `center / cover url("${form.querySelector(`label[for="${estampado.id}"] img`).src}")`;
-        colores.classList.add("opacity-25");
+        colores.classList.add("atenuado");
         return;
       }
-      if (colores) colores.classList.remove("opacity-25");
+      if (colores) colores.classList.remove("atenuado");
 
       const radio = form.querySelector(`input[name="${clave}"]:checked`);
       if (!radio) { el.textContent = ""; return; }
@@ -122,6 +125,35 @@
       if (punto) punto.style.background = radio.dataset.hex;
     });
   }
+
+  /** Agrega la selección actual al carrito y avisa para actualizar el contador. */
+  const botonCarrito = document.getElementById("btn-carrito");
+  const avisoCarrito = document.getElementById("aviso-carrito");
+
+  botonCarrito?.addEventListener("click", async () => {
+    botonCarrito.disabled = true;
+    avisoCarrito.hidden = true;
+    try {
+      const seleccion = leerSeleccion();
+      if (window.Simulador) seleccion.vista = await window.Simulador.vistaPrevia();
+      const resp = await fetch(botonCarrito.dataset.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrf },
+        body: JSON.stringify(seleccion),
+      });
+      const r = await resp.json();
+      if (r.ok) {
+        avisoCarrito.hidden = false;
+        document.body.dispatchEvent(new CustomEvent("carrito-cambiado"));
+      } else {
+        pintarError(r.error);
+      }
+    } catch (e) {
+      pintarError("No se pudo agregar al carrito. Intenta de nuevo.");
+    } finally {
+      botonCarrito.disabled = false;
+    }
+  });
 
   // Cualquier cambio: actualiza etiquetas y cotiza 200 ms después del último cambio.
   form.addEventListener("input", (e) => {

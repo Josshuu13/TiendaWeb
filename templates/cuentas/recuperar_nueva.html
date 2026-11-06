@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}Nueva contraseña{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <div class="panel tarjeta-cuenta">
+    {% if validlink %}
+      <h1>Crea tu nueva contraseña</h1>
+      <form class="formulario" method="post" novalidate>
+        {% csrf_token %}
+        {{ form.as_div }}
+        <button class="btn btn-primario btn-grande btn-bloque" type="submit">Guardar contraseña</button>
+      </form>
+    {% else %}
+      <h1>Enlace no válido</h1>
+      <p class="descripcion">Este enlace ya se usó o caducó.</p>
+      <a class="btn btn-primario" href="{% url 'cuentas:recuperar' %}">Pedir otro enlace</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

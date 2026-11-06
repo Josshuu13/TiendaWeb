@@ -1,25 +1,32 @@
 """
 Vistas: reciben la petición del navegador, consultan los modelos y responden.
 
-inicio       -> portada: categorías, kits navideños y "Así de fácil".
+inicio       -> portada: temporada vigente, categorías, destacados y "Así de fácil".
 lista        -> catálogo completo o por categoría, con filtros por talla y color.
+temporada    -> productos de una temporada activa.
 ayuda        -> políticas de envío, cambios/devoluciones y cancelación.
+privacidad   -> aviso de privacidad.
+terminos     -> términos y condiciones de la demo.
+robots       -> instrucciones para los buscadores (/robots.txt).
+salud        -> revisión del servidor para la plataforma de publicación (/salud/).
 detalle      -> página de un producto (simulador si es personalizable).
 api_cotizar  -> recibe la selección en JSON y devuelve el precio calculado.
 """
 import json
 
 from django.conf import settings
+from django.db import connection
 from django.db.models import Prefetch
+from django.utils.safestring import mark_safe
 from django.utils.text import slugify
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.templatetags.static import static
 from django.views.decorators.http import require_POST
 
 from .cotizacion import ErrorCotizacion, cotizar
 from .entregas import texto_entrega
-from .models import Categoria, Color, Producto, Variante
+from .models import Categoria, Color, Producto, Temporada, Variante
 
 
 def _productos_activos():
@@ -30,8 +37,6 @@ def _productos_activos():
     )
 
 
-SLUG_KITS = "kits"  # categoría que se muestra en su propia sección de la portada
-
 # Grupos de tallas para los filtros de la lista.
 GRUPOS_TALLA = {
     "nina": ("Niña", ["2-4", "6-8", "10-12"]),
@@ -40,11 +45,16 @@ GRUPOS_TALLA = {
 
 
 def inicio(request):
-    """Portada: una tarjeta por categoría (con su producto destacado como imagen)
-    y la sección de kits navideños."""
+    """Portada: temporada vigente, una tarjeta por categoría y productos destacados.
+
+    Todo sale de la base de datos: al crear una categoría, un producto o una temporada
+    en el admin, la portada se actualiza sin tocar el código.
+    """
     productos = _productos_activos()
+    temporada = Temporada.actual()
+    de_temporada = productos.filter(temporadas=temporada) if temporada else productos.none()
     categorias = []
-    for cat in Categoria.objects.exclude(slug=SLUG_KITS):
+    for cat in Categoria.objects.all():
         de_cat = [p for p in productos if p.categoria_id == cat.pk]
         if not de_cat:
             continue
@@ -57,8 +67,9 @@ def inicio(request):
         })
     contexto = {
         "categorias": categorias,
-        "kits": productos.filter(categoria__slug=SLUG_KITS, destacado=True)[:3],
-        "mono_personalizable": productos.filter(personalizable=True).first(),
+        "temporada": temporada,
+        "de_temporada": de_temporada,
+        "destacados": productos.filter(destacado=True).exclude(pk__in=de_temporada.values("pk"))[:6],
     }
     return render(request, "catalogo/inicio.html", contexto)
 
@@ -109,9 +120,72 @@ def lista(request, slug=None):
     })
 
 
+def temporada(request, slug):
+    """Todos los productos de una temporada activa."""
+    coleccion = get_object_or_404(Temporada, slug=slug, activa=True)
+    return render(request, "catalogo/temporada.html", {
+        "coleccion": coleccion,
+        "productos": _productos_activos().filter(temporadas=coleccion),
+    })
+
+
 def ayuda(request):
     """Políticas de envío, cambios y devoluciones, y cancelación."""
     return render(request, "catalogo/ayuda.html", {"dias_envio": settings.DIAS_ENVIO})
+
+
+def privacidad(request):
+    return render(request, "catalogo/privacidad.html")
+
+
+def terminos(request):
+    return render(request, "catalogo/terminos.html")
+
+
+def robots(request):
+    """Las páginas privadas no deben aparecer en los buscadores."""
+    lineas = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        "Disallow: /carrito/",
+        "Disallow: /compra/",
+        "Disallow: /cuentas/",
+        "Disallow: /pedidos/",
+        "Disallow: /pagos/",
+        f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}",
+    ]
+    return HttpResponse("\n".join(lineas) + "\n", content_type="text/plain")
+
+
+def salud(request):
+    """Responde 200 si el servidor y la base de datos funcionan."""
+    connection.ensure_connection()
+    return JsonResponse({"ok": True})
+
+
+def _datos_estructurados(request, producto):
+    """Ficha schema.org del producto para que los buscadores muestren precio y disponibilidad."""
+    imagen = producto.imagen.url if producto.imagen else producto.url_imagen_estatica
+    datos = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": producto.nombre,
+        "description": producto.descripcion,
+        "category": producto.categoria.nombre,
+        "offers": {
+            "@type": "Offer",
+            "url": request.build_absolute_uri(producto.get_absolute_url()),
+            "priceCurrency": "MXN",
+            "price": str(producto.precio_base),
+            "availability": "https://schema.org/InStock" if producto.disponible
+            else "https://schema.org/OutOfStock",
+        },
+    }
+    if imagen:
+        datos["image"] = request.build_absolute_uri(imagen)
+    # Se escapan <, > y & para que el texto no pueda cerrar la etiqueta <script>.
+    texto = json.dumps(datos, ensure_ascii=False)
+    return mark_safe(texto.replace("<", "\\u003C").replace(">", "\\u003E").replace("&", "\\u0026"))
 
 
 def _agrupar_colores(colores):
@@ -127,7 +201,7 @@ def _agrupar_colores(colores):
 
 def _para_combinar(producto, cuantos=4):
     """'Combínalo con…': un producto destacado de cada una de las otras categorías
-    y, si sobra lugar, más kits."""
+    y, si sobra lugar, más productos."""
     otros = list(
         _productos_activos().exclude(categoria=producto.categoria)
         .order_by("categoria__orden", "-destacado", "nombre")
@@ -137,10 +211,10 @@ def _para_combinar(producto, cuantos=4):
         if p.categoria_id not in categorias_vistas:
             elegidos.append(p)
             categorias_vistas.add(p.categoria_id)
-    for p in otros:                      # 2) completar con kits
+    for p in otros:                      # 2) completar con otros productos
         if len(elegidos) >= cuantos:
             break
-        if p not in elegidos and p.categoria.slug == SLUG_KITS:
+        if p not in elegidos:
             elegidos.append(p)
     return elegidos[:cuantos]
 
@@ -152,6 +226,7 @@ def detalle(request, slug):
         "categoria_actual": producto.categoria.slug,
         "texto_entrega": texto_entrega(producto.dias_elaboracion),
         "combina": _para_combinar(producto),
+        "datos_estructurados": _datos_estructurados(request, producto),
     }
 
     if producto.personalizable:

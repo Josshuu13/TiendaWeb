@@ -1,0 +1,14 @@
+{% load moneda %}Hola {{ pedido.usuario.first_name }}:
+
+Tu pedido {{ pedido.folio }} ahora está: {{ pedido.get_estado_display }}.
+{% if pedido.transportista_visible %}
+Transportista: {{ pedido.transportista }}
+Número de guía: {{ pedido.numero_guia }}
+{% endif %}
+Total: {{ pedido.total|pesos }}
+Entrega estimada: del {{ pedido.entrega_minima|date:"j \d\e F"|lower }} al {{ pedido.entrega_maxima|date:"j \d\e F"|lower }}
+
+Sigue tu pedido aquí:
+{{ url }}
+
+{{ nombre_tienda }} (tienda de demostración; proyecto académico de la UNAM)

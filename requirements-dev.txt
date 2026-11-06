@@ -1,0 +1,5 @@
+# Dependencias para desarrollar y probar.
+-r requirements.txt
+pytest>=8.0
+pytest-django>=4.8
+ruff>=0.8

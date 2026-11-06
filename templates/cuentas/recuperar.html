@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Recuperar contraseña{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <div class="panel tarjeta-cuenta">
+    <h1>Recupera tu contraseña</h1>
+    <p class="nota">Te enviaremos un enlace para crear una nueva.</p>
+    <form class="formulario" method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_div }}
+      <button class="btn btn-primario btn-grande btn-bloque" type="submit">Enviar enlace</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

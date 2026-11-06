@@ -1,0 +1,26 @@
+# Publicación en Render (plan gratuito). Ver docs/publicacion.md.
+services:
+  - type: web
+    name: pretexto
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn tiendaWeb.wsgi:application
+    healthCheckPath: /salud/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pretexto-db
+          property: connectionString
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+databases:
+  - name: pretexto-db
+    plan: free

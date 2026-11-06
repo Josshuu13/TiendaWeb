@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}Página no encontrada{% endblock %}
+{% block contenido %}
+<div class="contenedor-angosto vacio">
+  <h1 class="h-pagina">No encontramos esta página</h1>
+  <p class="descripcion">Puede que la dirección haya cambiado.</p>
+  <a class="btn btn-primario" href="{% url 'catalogo:inicio' %}">Volver a la tienda</a>
+</div>
+{% endblock %}

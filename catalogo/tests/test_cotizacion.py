@@ -119,8 +119,8 @@ def test_cantidad_fuera_de_rango(cantidad):
 # --- Productos de catálogo ---
 
 def test_sueter_talla_grande_tiene_extra():
-    v = Variante.objects.get(producto__slug="sueter-reno", talla="G", color__nombre="Rojo navidad")
-    cot = cotizar({"producto": "sueter-reno", "variante": v.sku, "cantidad": 2})
+    v = Variante.objects.get(producto__slug="sueter-renos-azul", talla="G", color__nombre="Azul marino")
+    cot = cotizar({"producto": "sueter-renos-azul", "variante": v.sku, "cantidad": 2})
     assert cot.precio_unitario == Decimal("490.00")
     assert cot.total == Decimal("980.00")
 
@@ -138,15 +138,15 @@ def test_no_se_puede_pedir_mas_de_lo_que_hay():
 
 
 def test_variante_de_otro_producto_se_rechaza():
-    ajena = Variante.objects.filter(producto__slug="sueter-copos").first()
+    ajena = Variante.objects.filter(producto__slug="sueter-santa").first()
     with pytest.raises(ErrorCotizacion):
-        cotizar({"producto": "sueter-reno", "variante": ajena.sku})
+        cotizar({"producto": "sueter-renos-azul", "variante": ajena.sku})
 
 
 def test_producto_inactivo_no_se_cotiza():
-    Producto.objects.filter(slug="sueter-reno").update(activo=False)
+    Producto.objects.filter(slug="sueter-renos-azul").update(activo=False)
     with pytest.raises(ErrorCotizacion):
-        cotizar({"producto": "sueter-reno", "variante": "X"})
+        cotizar({"producto": "sueter-renos-azul", "variante": "X"})
 
 
 def test_cargar_datos_demo_se_puede_repetir():
