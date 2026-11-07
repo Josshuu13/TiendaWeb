@@ -1,0 +1,40 @@
+# Integración continua: revisa cada subida y cada Pull Request.
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: pruebas
+          POSTGRES_DB: pretexto
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:pruebas@localhost:5432/pretexto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Estilo del código
+        run: ruff check .
+      - name: Migraciones al día
+        run: python manage.py makemigrations --check --dry-run
+      - name: Pruebas
+        run: pytest -q
+      - name: Revisión de seguridad para producción
+        run: python manage.py check --deploy --fail-level ERROR
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_SECRET_KEY: clave-larga-solo-para-revisar-la-configuracion-en-ci-0123456789

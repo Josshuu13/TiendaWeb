@@ -1,0 +1,8 @@
+Hola:
+
+Recibimos una solicitud para cambiar la contraseña de tu cuenta de {{ nombre_tienda }}.
+Abre este enlace para crear una nueva:
+
+{{ protocol }}://{{ domain }}{% url 'cuentas:recuperar_nueva' uidb64=uid token=token %}
+
+Si no fuiste tú, ignora este mensaje.

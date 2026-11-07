@@ -1,0 +1,75 @@
+{% load static moneda %}
+{% comment %}
+  Contenido del carrito. HTMX reemplaza este bloque al cambiar una cantidad; sin
+  JavaScript, los mismos formularios recargan la página.
+{% endcomment %}
+<div id="carrito-contenido">
+  {% if aviso %}<ul class="mensajes" role="alert" style="margin-top: 0"><li class="error">{{ aviso }}</li></ul>{% endif %}
+
+  {% if not resumen.lineas %}
+    <div class="vacio">
+      <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#carrito"/></svg>
+      <h2>Tu carrito está vacío</h2>
+      <p class="descripcion">Encuentra tu pretexto en el catálogo.</p>
+      <a class="btn btn-primario" href="{% url 'catalogo:lista' %}">Ver el catálogo</a>
+    </div>
+  {% else %}
+    <div class="compra-grid">
+      <section class="panel" aria-label="Productos">
+        {% for linea in resumen.lineas %}
+          <article class="linea">
+            <div class="linea-img">
+              {% if linea.vista %}<img src="{{ linea.vista }}" alt="Vista previa de tu moño">
+              {% elif linea.cotizacion %}{% include "catalogo/_imagen.html" with producto=linea.cotizacion.producto %}{% endif %}
+            </div>
+            <div>
+              {% if linea.cotizacion %}
+                <h2><a href="{{ linea.cotizacion.producto.get_absolute_url }}">{{ linea.cotizacion.producto.nombre }}</a></h2>
+                <ul class="linea-detalle">
+                  {% for parte, valor in linea.cotizacion.seleccion.items %}<li>{{ parte|capfirst }}: {{ valor }}</li>{% endfor %}
+                </ul>
+                <div class="linea-pie">
+                  <form class="cant" action="{% url 'carrito:actualizar' linea.id %}" method="post"
+                        hx-post="{% url 'carrito:actualizar' linea.id %}" hx-target="#carrito-contenido" hx-swap="outerHTML">
+                    {% csrf_token %}
+                    <button name="cantidad" value="{{ linea.cantidad|add:'-1' }}" aria-label="Quitar una pieza" {% if linea.cantidad == 1 %}disabled{% endif %}>−</button>
+                    <output aria-label="Cantidad">{{ linea.cantidad }}</output>
+                    <button name="cantidad" value="{{ linea.cantidad|add:'1' }}" aria-label="Agregar una pieza">+</button>
+                  </form>
+                  <div class="linea-acciones">
+                    <form action="{% url 'carrito:quitar' linea.id %}" method="post"
+                          hx-post="{% url 'carrito:quitar' linea.id %}" hx-target="#carrito-contenido" hx-swap="outerHTML">
+                      {% csrf_token %}
+                      <button class="btn btn-enlace" type="submit">Quitar</button>
+                    </form>
+                    <span class="linea-importe">{{ linea.cotizacion.total|pesos }}</span>
+                  </div>
+                </div>
+              {% else %}
+                <h2>Producto no disponible</h2>
+                <p class="texto-error">{{ linea.error }}</p>
+                <form action="{% url 'carrito:quitar' linea.id %}" method="post"
+                      hx-post="{% url 'carrito:quitar' linea.id %}" hx-target="#carrito-contenido" hx-swap="outerHTML">
+                  {% csrf_token %}
+                  <button class="btn btn-enlace" type="submit">Quitar del carrito</button>
+                </form>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+
+      <aside class="panel panel-fijo" aria-label="Resumen">
+        <h2>Resumen</h2>
+        {% include "pedidos/_importes.html" with subtotal=resumen.subtotal envio=resumen.envio total=resumen.total %}
+        <p class="nota">{{ resumen.texto_entrega }}</p>
+        {% if resumen.tiene_errores %}
+          <p class="texto-error nota">Quita los productos no disponibles para continuar.</p>
+        {% else %}
+          <a class="btn btn-primario btn-grande btn-bloque" href="{% url 'pedidos:compra' %}">Continuar con la compra</a>
+        {% endif %}
+        <p class="nota centrado">Los precios ya incluyen IVA.</p>
+      </aside>
+    </div>
+  {% endif %}
+</div>

@@ -215,6 +215,28 @@
     ctx.globalAlpha = 1;
   }
 
+  /**
+   * Imagen pequeña del moño, sin resaltados ni zoom, para mostrarla en el carrito y en
+   * el pedido. Se pinta en un canvas aparte para no tocar lo que ve el cliente.
+   */
+  async function vistaPrevia(ancho = 300) {
+    if (!listo || !seleccion) return "";
+    const { colores, estampado } = seleccion;
+    const usarEstampado = estampado && (await prepararEstampado(estampado));
+    const salida = document.createElement("canvas");
+    salida.width = ancho;
+    salida.height = Math.round(canvas.height * (ancho / canvas.width));
+    const g = salida.getContext("2d");
+    for (const capa of capas) {
+      const imagen = usarEstampado && config.estampables.includes(capa.clave)
+        ? capaEstampada(capa, estampado)
+        : capaColor(capa, colores[capa.clave] || "#FFFFFF");
+      g.drawImage(imagen, 0, 0, salida.width, salida.height);
+    }
+    return salida.toDataURL("image/webp", 0.8);
+  }
+  window.Simulador = { vistaPrevia };
+
   // ------------------------------------------------------------ zoom y arrastre
   /*
    * El zoom NO vuelve a dibujar el moño: solo agranda el canvas con CSS

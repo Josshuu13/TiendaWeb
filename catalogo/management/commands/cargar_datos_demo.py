@@ -13,7 +13,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from catalogo.models import (
-    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, Producto, Variante,
+    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, Producto, Temporada, Variante,
 )
 
 # ---------------------------------------------------------------------------
@@ -58,14 +58,38 @@ CATEGORIAS = [
 # Kits navideños de ejemplo: (slug, nombre, precio, precio sin descuento, color, descripción)
 KITS = [
     ("kit-reno-rojo", "Kit Reno rojo", "580.00", "680.00", "Rojo navidad",
-     "Moño navideño + Suéter Reno + Calcetines Santa, en rojo a juego."),
+     "Moño navideño + Suéter Santa + Calcetines Santa, en rojo a juego."),
     ("kit-pino", "Kit Pino", "590.00", "695.00", "Verde pino",
-     "Moño verde pino + Suéter Copos + Calcetines Rayas."),
+     "Moño verde pino + Suéter Osito + Calcetines Rayas."),
     ("kit-vino-dorado", "Kit Vino y dorado", "585.00", "685.00", "Vino",
      "Moño vino y dorado + suéter + calcetines, ideal para posadas."),
     ("kit-escolar", "Kit Escolar", "170.00", "195.00", "Azul marino",
      "Moño escolar + calcetines (sin suéter), en colores de uniforme."),
 ]
+
+# Suéteres: (slug, nombre, precio, color, descripción). Cada diseño es un producto con su
+# imagen en static/img/sueteres/<slug>.webp. Para agregar uno nuevo basta con un renglón
+# aquí y su imagen.
+SUETERES = [
+    ("sueter-renos-azul", "Suéter Renos azul marino", "450.00", "Azul marino",
+     "Dos renos tejidos entre copos de nieve y una franja de pinos. Abrigador y perfecto para posadas."),
+    ("sueter-santa", "Suéter Santa", "480.00", "Rojo navidad",
+     "Santa Claus al frente con pinos y renos en la parte baja. El clásico de las fotos familiares."),
+    ("sueter-muneco-nieve", "Suéter Muñeco de nieve", "450.00", "Gris Oxford",
+     "Muñeco de nieve con bufanda roja sobre tejido gris. Combina con moños de cualquier color."),
+    ("sueter-osito", "Suéter Osito", "470.00", "Verde pino",
+     "Osito con gorro de Santa, copos y corazones. Tierno y fácil de combinar con rojo o dorado."),
+    ("sueter-merry-christmas", "Suéter Merry Christmas", "480.00", "Negro",
+     "Reno sonriente con letras Merry Christmas sobre tejido negro."),
+]
+# Guía de tallas de los suéteres; cada categoría puede tener la suya.
+GUIA_TALLAS_SUETERES = """2-4: niña de 2 a 4 años
+6-8: niña de 6 a 8 años
+10-12: niña de 10 a 12 años
+CH / M / G: adulto, pecho de 88-94 / 96-102 / 104-110 cm"""
+
+# Suéteres de la primera versión: dejan de mostrarse en la tienda.
+SUETERES_RETIRADOS = ["sueter-reno", "sueter-copos"]
 
 # Partes del moño personalizable, en orden de dibujo (de atrás hacia adelante).
 # (clave, nombre visible, color inicial, ¿admite estampado?, paso en que el cliente la elige)
@@ -188,24 +212,19 @@ class Command(BaseCommand):
         for color, stock in stock_escolar.items():
             self._variante(escolar, "UNI", colores[color], stock)
 
-        # --- Suéteres (cada uno en uno o varios colores) ---
-        for slug, nombre, precio, lista_colores, desc in [
-            ("sueter-reno", "Suéter Reno", "450.00", ["Rojo navidad", "Verde pino"],
-             "Suéter tejido con reno y copos de nieve. Suave, abrigador y perfecto para posadas y fotos familiares."),
-            ("sueter-copos", "Suéter Copos", "480.00", ["Verde pino"],
-             "Suéter con patrón de copos de nieve."),
-        ]:
+        # --- Suéteres (un producto por diseño, en tallas de niña y adulto) ---
+        Producto.objects.filter(slug__in=SUETERES_RETIRADOS).update(activo=False, destacado=False)
+        for slug, nombre, precio, color, desc in SUETERES:
             p = self._producto(slug, cats["sueteres"], nombre, precio, 0, desc,
-                               destacado=slug == "sueter-reno")
-            p.variantes.exclude(color__nombre__in=lista_colores).delete()
-            for color in lista_colores:
-                for t in TALLAS_NINA:
-                    # Ejemplo de talla agotada: 10-12 del Reno verde.
-                    stock = 0 if (slug == "sueter-reno" and color == "Verde pino" and t == "10-12") else 6
-                    self._variante(p, t, colores[color], stock)
-                for t in TALLAS_ADULTO:
-                    extra = "40.00" if t == "G" else "0"  # la talla G cuesta $40 más
-                    self._variante(p, t, colores[color], 4, extra)
+                               destacado=slug == "sueter-renos-azul")
+            p.variantes.exclude(color=colores[color]).delete()
+            for t in TALLAS_NINA:
+                # Ejemplo de talla agotada: 10-12 del Suéter Osito.
+                stock = 0 if (slug == "sueter-osito" and t == "10-12") else 6
+                self._variante(p, t, colores[color], stock)
+            for t in TALLAS_ADULTO:
+                extra = "40.00" if t == "G" else "0"  # la talla G cuesta $40 más
+                self._variante(p, t, colores[color], 4, extra)
 
         # --- Calcetines ---
         for slug, nombre, precio, color, desc in [
@@ -228,6 +247,27 @@ class Command(BaseCommand):
             p.save(update_fields=["precio_anterior"])
             p.variantes.exclude(color=colores[color]).delete()
             self._variante(p, "UNI", colores[color], 8)
+
+        # --- Guía de tallas y temporada de ejemplo ---
+        cats["sueteres"].guia_tallas = GUIA_TALLAS_SUETERES
+        cats["sueteres"].save(update_fields=["guia_tallas"])
+
+        temporada, _ = Temporada.objects.update_or_create(
+            slug="navidad-2026",
+            defaults={
+                "nombre": "Navidad 2026",
+                "activa": True,
+                "aviso": "Esta temporada, el pretexto es Navidad. Envíos a todo México.",
+                "etiqueta": "Temporada navideña",
+                "titulo": "Este año, el pretexto es Navidad.",
+                "descripcion": "Diseña su moño con fotos reales y completa el look con suéter y calcetines a juego.",
+                "producto_principal": clasico,
+                "boton_texto": "Diseñar mi moño",
+            },
+        )
+        temporada.productos.set(Producto.objects.filter(
+            activo=True, categoria__slug__in=["monos", "sueteres", "kits"],
+        ).exclude(slug__in=["mono-escolar", "kit-escolar"]))
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Categoria.objects.count()} categorías, "

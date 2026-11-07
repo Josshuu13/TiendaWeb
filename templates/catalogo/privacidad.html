@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Aviso de privacidad{% endblock %}
+{% block contenido %}
+<div class="contenedor-angosto texto">
+  <h1 class="h-pagina">Aviso de privacidad</h1>
+  <p class="descripcion">Esta tienda es un proyecto académico de la Facultad de Ingeniería de la UNAM. Usa únicamente datos de prueba.</p>
+  <section class="tarjeta-texto">
+    <h2>Qué datos usamos</h2>
+    <ul>
+      <li>Nombre y correo, para crear tu cuenta y avisarte del estado de tu pedido.</li>
+      <li>Dirección y teléfono, para simular la entrega de tus pedidos.</li>
+      <li>Los datos de tarjeta los recibe directamente Stripe y nunca pasan por este sitio.</li>
+    </ul>
+  </section>
+  <section class="tarjeta-texto">
+    <h2>Para qué los usamos</h2>
+    <p>Solo para operar la demostración de la tienda. No se venden ni se comparten con fines comerciales. Te pedimos no capturar datos reales.</p>
+  </section>
+  <section class="tarjeta-texto">
+    <h2>Tus derechos</h2>
+    <p>Puedes pedir que corrijamos o eliminemos tu información escribiendo a soporte por los medios indicados en la <a href="{% url 'catalogo:ayuda' %}#soporte">página de soporte</a>.</p>
+  </section>
+  <section class="tarjeta-texto">
+    <h2>Cookies</h2>
+    <p>Usamos solo las cookies necesarias para tu sesión, tu carrito y la seguridad del sitio. No usamos cookies de publicidad.</p>
+  </section>
+</div>
+{% endblock %}

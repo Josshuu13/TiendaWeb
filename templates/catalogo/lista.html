@@ -4,11 +4,18 @@
   Los filtros se mandan en la URL: ?talla=nina&color=12
 {% endcomment %}
 {% block titulo %}{{ categoria.nombre|default:"Catálogo" }}{% endblock %}
+{% block og_titulo %}{{ categoria.nombre|default:"Catálogo" }} · {{ nombre_tienda }}{% endblock %}
+{% block descripcion %}{{ categoria.descripcion|default:"Catálogo completo de la tienda." }}{% endblock %}
 {% block contenido %}
-<div class="container">
-  <div class="miga"><a href="{% url 'catalogo:inicio' %}">Inicio</a> › {{ categoria.nombre|default:"Catálogo" }}</div>
-  <h1 class="titulo h-pagina">{% if categoria.slug == 'kits' %}🎁 {% endif %}{{ categoria.nombre|default:"Catálogo completo" }}</h1>
-  {% if categoria.descripcion %}<p class="text-body-secondary mb-0">{{ categoria.descripcion }}</p>{% endif %}
+<div class="contenedor">
+  <nav aria-label="Ruta" class="miga">
+    <ol>
+      <li><a href="{% url 'catalogo:inicio' %}">Inicio</a></li>
+      <li aria-current="page">{{ categoria.nombre|default:"Catálogo" }}</li>
+    </ol>
+  </nav>
+  <h1 class="h-pagina">{{ categoria.nombre|default:"Catálogo completo" }}</h1>
+  {% if categoria.descripcion %}<p class="descripcion">{{ categoria.descripcion }}</p>{% endif %}
 
   {% if filtros_talla or filtros_color %}
     <!-- Filtros: cada botón es un link que agrega el filtro a la URL -->
@@ -24,11 +31,11 @@
     </div>
   {% endif %}
 
-  <div class="productos mt-3">
+  <div class="productos">
     {% for producto in productos %}
       {% include "catalogo/_tarjeta.html" %}
     {% empty %}
-      <p class="text-body-secondary">No hay productos con esos filtros. <a href="?">Ver todos</a></p>
+      <p class="descripcion">No hay productos con esos filtros. <a href="?">Ver todos</a></p>
     {% endfor %}
   </div>
 </div>

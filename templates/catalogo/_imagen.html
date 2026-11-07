@@ -1,30 +1,33 @@
 {% load static %}
 {% comment %}
-  Imagen de un producto.
-  - Si tiene foto subida en el admin, se usa la foto.
-  - Si no: los moños usan una vista del simulador en su color, los suéteres y
-    calcetines un dibujo de ejemplo, y los kits muestran sus tres piezas juntas.
+  Imagen de un producto, en este orden:
+  1. La foto subida en el admin.
+  2. Una imagen en static/img/<categoria>/<slug>.webp.
+  3. Los casos de la colección inicial: la vista del moño y los dibujos de ejemplo.
+  4. Un dibujo genérico. Así, una categoría nueva nunca se ve rota.
   Parámetro opcional: clase (clases CSS extra).
 {% endcomment %}
-{% with cat=producto.categoria.slug color=producto.color_muestra primer_color=producto.colores_disponibles.0 %}
+{% with cat=producto.categoria.slug color=producto.color_muestra primer_color=producto.colores_disponibles.0 estatica=producto.url_imagen_estatica %}
 {% if producto.imagen %}
-  <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="{{ clase }}">
+  <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="{{ clase }}" loading="lazy" decoding="async">
+{% elif estatica %}
+  <img src="{{ estatica }}" alt="{{ producto.nombre }}" class="{{ clase }}" loading="lazy" decoding="async">
+{% elif cat == "monos" and producto.personalizable %}
+  <img src="{% static 'img/monos/personalizable.webp' %}" alt="{{ producto.nombre }}" class="{{ clase }}" loading="lazy" decoding="async" data-imagen-mono>
 {% elif cat == "monos" %}
-  {% if producto.personalizable %}
-    <img src="{% static 'img/monos/personalizable.webp' %}" alt="{{ producto.nombre }}" class="{{ clase }}" data-imagen-mono>
-  {% else %}
-    <img src="{% static 'img/monos/' %}{{ primer_color.nombre|slugify }}.webp" alt="{{ producto.nombre }}"
-         class="{{ clase }}" data-imagen-mono data-base="{% static 'img/monos/' %}">
-  {% endif %}
+  <img src="{% static 'img/monos/' %}{{ primer_color.nombre|slugify }}.webp" alt="{{ producto.nombre }}"
+       class="{{ clase }}" loading="lazy" decoding="async" data-imagen-mono data-base="{% static 'img/monos/' %}">
 {% elif cat == "sueteres" %}
   {% include "catalogo/_dibujo.html" with tipo="sueter" %}
 {% elif cat == "calcetines" %}
   {% include "catalogo/_dibujo.html" with tipo="calcetin" %}
-{% else %}
+{% elif cat == "kits" %}
   <span class="kit-piezas">
-    <img src="{% static 'img/monos/' %}{{ primer_color.nombre|default:'Rojo navidad'|slugify }}.webp" alt="">
+    <img src="{% static 'img/monos/' %}{{ primer_color.nombre|default:'Rojo navidad'|slugify }}.webp" alt="" loading="lazy" decoding="async">
     {% include "catalogo/_dibujo.html" with tipo="sueter" %}
     {% include "catalogo/_dibujo.html" with tipo="calcetin" %}
   </span>
+{% else %}
+  {% include "catalogo/_dibujo.html" with tipo="generico" %}
 {% endif %}
 {% endwith %}

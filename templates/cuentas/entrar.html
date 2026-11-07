@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <div class="panel tarjeta-cuenta">
+    <h1>Entra a tu cuenta</h1>
+    <form class="formulario" method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_div }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn btn-primario btn-grande btn-bloque" type="submit">Entrar</button>
+    </form>
+    <p class="enlaces-cuenta"><a href="{% url 'cuentas:recuperar' %}">¿Olvidaste tu contraseña?</a></p>
+    <p class="enlaces-cuenta">¿Aún no tienes cuenta? <a href="{% url 'cuentas:registro' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Crea una</a></p>
+  </div>
+</div>
+{% endblock %}

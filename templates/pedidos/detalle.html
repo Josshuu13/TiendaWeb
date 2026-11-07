@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static moneda %}
+{% comment %}
+  Seguimiento del pedido. Si el cliente acaba de pagar, HTMX consulta esta misma página
+  cada pocos segundos hasta que Stripe confirma el pago.
+{% endcomment %}
+{% block titulo %}Pedido {{ pedido.folio }}{% endblock %}
+{% block contenido %}
+<div class="contenedor texto">
+  <nav aria-label="Ruta" class="miga">
+    <ol>
+      <li><a href="{% url 'pedidos:lista' %}">Mis pedidos</a></li>
+      <li aria-current="page">{{ pedido.folio }}</li>
+    </ol>
+  </nav>
+
+  <div id="estado-del-pedido"
+       {% if esperando_pago %}hx-get="{{ request.path }}?pago=ok" hx-trigger="every 4s" hx-select="#estado-del-pedido" hx-swap="outerHTML"{% endif %}>
+    <div class="pedido-cabecera">
+      <h1>Pedido <span class="pedido-folio">{{ pedido.folio }}</span></h1>
+      <span class="etiqueta estado-pedido estado-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span>
+    </div>
+
+    {% if esperando_pago %}
+      <p class="indicador" role="status">Estamos confirmando tu pago con Stripe. Esta página se actualiza sola.</p>
+    {% endif %}
+
+    <div class="compra-grid">
+      <div>
+        <!-- Línea de tiempo de la entrega -->
+        <section class="panel" aria-labelledby="titulo-seguimiento">
+          <h2 id="titulo-seguimiento">Seguimiento de tu entrega</h2>
+          {% if pedido.estado == "cancelado" %}
+            <p>Este pedido fue cancelado.</p>
+          {% elif pedido.esta_pendiente %}
+            <p>Tu pedido está apartado. Completa el pago para confirmarlo.</p>
+            <div class="fila">
+              <form action="{% url 'pedidos:pagar' pedido.folio %}" method="post">{% csrf_token %}<button class="btn btn-primario" type="submit">Pagar {{ pedido.total|pesos }}</button></form>
+              <form action="{% url 'pedidos:descartar' pedido.folio %}" method="post">{% csrf_token %}<button class="btn btn-suave" type="submit">Cancelar pedido</button></form>
+            </div>
+          {% else %}
+            <ol class="linea-tiempo">
+              {% for paso in pedido.linea_de_tiempo %}
+                <li class="{% if paso.hecho %}hecho{% endif %} {% if paso.actual %}actual{% endif %}" {% if paso.actual %}aria-current="step"{% endif %}>
+                  <span class="punto">{% if paso.hecho %}<svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#check"/></svg>{% endif %}</span>
+                  <div>
+                    <span class="paso-nombre">{{ paso.nombre }}</span>
+                    {% if paso.fecha %}<span class="paso-fecha">{{ paso.fecha|date:"j M, H:i" }}</span>{% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ol>
+          {% endif %}
+        </section>
+
+        <!-- Productos -->
+        <section class="panel" aria-label="Productos del pedido">
+          <h2>Productos</h2>
+          {% for linea in pedido.lineas.all %}
+            <article class="linea">
+              <div class="linea-img">
+                {% if linea.vista_previa %}<img src="{{ linea.vista_previa }}" alt="Vista previa de tu moño">
+                {% elif linea.producto %}{% include "catalogo/_imagen.html" with producto=linea.producto %}{% endif %}
+              </div>
+              <div>
+                <h3>{{ linea.nombre }}</h3>
+                <ul class="linea-detalle">
+                  {% for parte, valor in linea.seleccion.items %}<li>{{ parte|capfirst }}: {{ valor }}</li>{% endfor %}
+                  <li>Cantidad: {{ linea.cantidad }}</li>
+                </ul>
+                <span class="linea-importe">{{ linea.importe|pesos }}</span>
+              </div>
+            </article>
+          {% endfor %}
+        </section>
+      </div>
+
+      <aside>
+        <!-- Entrega -->
+        <section class="panel" aria-labelledby="titulo-entrega">
+          <h2 id="titulo-entrega">Entrega</h2>
+          <dl class="datos">
+            <dt>Estimada</dt><dd>{{ pedido.entrega_minima|date:"j M" }} al {{ pedido.entrega_maxima|date:"j M" }}</dd>
+            {% if pedido.transportista_visible %}
+              <dt>Transportista</dt><dd>{{ pedido.transportista }}</dd>
+              <dt>Guía</dt><dd>{{ pedido.numero_guia }}</dd>
+            {% endif %}
+            {% if pedido.telefono_transportista_visible %}
+              <dt>Teléfono</dt><dd><a href="tel:+52{{ pedido.telefono_transportista_visible }}">{{ pedido.telefono_transportista_visible|telefono }}</a></dd>
+            {% endif %}
+            <dt>Dirección</dt>
+            <dd>{{ pedido.nombre_destinatario }}<br>{{ pedido.calle }}, {{ pedido.colonia }}<br>{{ pedido.codigo_postal }}, {{ pedido.ciudad }}, {{ pedido.entidad }}</dd>
+          </dl>
+        </section>
+
+        <!-- Soporte técnico, siempre visible -->
+        <section class="panel" aria-labelledby="titulo-soporte">
+          <h2 id="titulo-soporte">¿Necesitas ayuda?</h2>
+          <p class="nota">Para una emergencia o un cambio en la entrega, contáctanos con tu ID de pedido.</p>
+          <div class="fila">
+            <a class="btn btn-primario btn-bloque" href="{{ enlace_whatsapp }}" target="_blank" rel="noopener">
+              <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#whatsapp"/></svg>WhatsApp</a>
+            <a class="btn btn-secundario btn-bloque" href="tel:+52{{ tienda.telefono_soporte }}">
+              <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#telefono"/></svg>{{ tienda.telefono_soporte|telefono }}</a>
+          </div>
+          <p class="nota">{{ tienda.horario_soporte }}</p>
+        </section>
+
+        <!-- Importes -->
+        <section class="panel" aria-label="Importes">
+          {% include "pedidos/_importes.html" with subtotal=pedido.subtotal envio=pedido.costo_envio total=pedido.total %}
+        </section>
+
+        <!-- Cancelación o devolución -->
+        {% with abierta=pedido.solicitud_abierta %}
+          {% if abierta %}
+            <section class="panel">
+              <h2>{{ abierta.get_tipo_display }} en revisión</h2>
+              <p class="nota">Recibimos tu solicitud y te avisaremos cuando la resolvamos.</p>
+            </section>
+          {% elif pedido.puede_cancelarse or pedido.puede_devolverse %}
+            <section class="panel">
+              <details class="plegable">
+                <summary>{% if pedido.puede_cancelarse %}Solicitar cancelación{% else %}Solicitar devolución{% endif %}</summary>
+                <form class="formulario" action="{% url 'pedidos:solicitud' pedido.folio %}" method="post">
+                  {% csrf_token %}
+                  {{ form_solicitud.as_div }}
+                  <button class="btn btn-secundario" type="submit">Enviar solicitud</button>
+                </form>
+              </details>
+            </section>
+          {% endif %}
+        {% endwith %}
+        {% for solicitud in pedido.solicitudes.all %}
+          {% if solicitud.estado != "solicitada" %}
+            <section class="panel">
+              <h2>{{ solicitud.get_tipo_display }} {{ solicitud.get_estado_display|lower }}</h2>
+              <p class="nota">{{ solicitud.respuesta }}</p>
+            </section>
+          {% endif %}
+        {% endfor %}
+      </aside>
+    </div>
+  </div>
+</div>
+{% endblock %}

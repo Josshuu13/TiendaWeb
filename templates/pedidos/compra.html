@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load moneda %}
+{% block titulo %}Finalizar compra{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <h1 class="h-pagina" style="margin-top: 32px">Finalizar compra</h1>
+  <div class="compra-grid">
+    <section class="panel">
+      <h2>¿A dónde lo enviamos?</h2>
+      <form class="formulario" id="form-compra" method="post" novalidate>
+        {% csrf_token %}
+        {{ form.as_div }}
+      </form>
+    </section>
+    <aside class="panel panel-fijo" aria-label="Resumen">
+      <h2>Tu pedido</h2>
+      <ul class="linea-detalle">
+        {% for linea in resumen.lineas %}
+          <li>{{ linea.cantidad }} × {{ linea.cotizacion.producto.nombre }}</li>
+        {% endfor %}
+      </ul>
+      {% include "pedidos/_importes.html" with subtotal=resumen.subtotal envio=resumen.envio total=resumen.total %}
+      <p class="nota">{{ resumen.texto_entrega }}</p>
+      <button class="btn btn-primario btn-grande btn-bloque" type="submit" form="form-compra">Ir a pagar {{ resumen.total|pesos }}</button>
+      <p class="nota centrado">Pago seguro. Tu tarjeta nunca pasa por nuestro servidor.</p>
+    </aside>
+  </div>
+</div>
+{% endblock %}

@@ -1,42 +1,48 @@
-# Moñería – Tienda web de moños personalizables
+# Pretexto – Tienda en línea de productos de temporada
 
 Proyecto de **Negocios Electrónicos y Desarrollo Web** (Facultad de Ingeniería, UNAM).
-Tienda B2C de moños para niña con simulador visual, más suéteres y calcetines navideños.
+Tienda B2C pensada para vender lo que haya en cada temporada. La primera colección son moños
+para niña con simulador visual, suéteres y calcetines navideños, y los productos, categorías y
+temporadas se administran desde el panel, sin programar.
 
-## Qué hay hasta ahora
+Es una demostración académica: los pagos son de prueba y no se realizan ventas reales.
 
-- Proyecto Django `tiendaWeb` con la app `catalogo`.
-- Modelos: `Categoria`, `Color` (agrupados en escolares, navideños y básicos), `Producto`, `Variante` (talla, color y existencias), `Parte` (capas del moño) y `Estampado` (listones decorados).
-- **Simulador visual del moño** con fotos reales: 6 partes con color propio (patas, base de abajo, base de arriba, decorado, tiras y nudo) y decorado liso o estampado.
-- Panel de administración en español (`/admin/`).
-- Páginas: inicio, catálogo por categoría y detalle de producto.
-- **Cotización validada en el servidor** (`/api/cotizar/`): el navegador solo manda la selección y el servidor calcula el precio, revisa colores permitidos y existencias.
-- Comando `cargar_datos_demo` con un catálogo de ejemplo.
-- 42 pruebas con pytest.
+## Qué incluye
 
-## Tienda (portada, categorías y kits)
+- **Temporadas** que se programan en el admin: aviso, portada, productos y fechas.
+- **Catálogo** por categorías con filtros por talla y color.
+- **Simulador visual del moño** con fotos reales: 6 partes con color propio y decorado liso o estampado.
+- **Personalizador paso a paso** con "Lo más vendido", zoom y Restablecer.
+- **Cinco suéteres navideños** en tallas de niña y adulto, sin personalización.
+- **Cotización validada en el servidor**: el navegador solo manda la selección.
+- **Carrito mixto** con cantidades y actualización sin recargar la página.
+- **Cuentas** con registro, inicio de sesión y recuperación de contraseña.
+- **Compra** con dirección, envío de tarifa fija y fecha estimada de entrega.
+- **Pago con Stripe** en modo de pruebas, confirmado por webhook firmado.
+- **Mis pedidos** con ID de pedido, línea de tiempo, transportista, guía y teléfonos.
+- **Soporte técnico** por WhatsApp con el ID del pedido, y teléfono siempre visible.
+- **Cancelaciones y devoluciones** por solicitud, resueltas desde el admin.
+- **Panel de administración** en español (`/admin/`).
+- **Correos automáticos** al cambiar el estado del pedido.
+- 170 pruebas automáticas con pytest.
 
-- **Portada:** compra por categoría, kits navideños (productos de la categoría `kits` marcados como destacados) y "Así de fácil".
-- **Listas con filtros** por talla (Niña/Adulto) y color: `/catalogo/sueteres/?talla=nina&color=12`.
-- **Página de producto:** colores y tallas como botones (`static/js/producto.js`), tallas agotadas tachadas y **fecha estimada de entrega** (`catalogo/entregas.py`: días de elaboración + días de envío, solo días hábiles).
-- **Kits:** se dan de alta como productos de la categoría *Kits navideños*; el campo *precio anterior* muestra el descuento.
-- **Ayuda** (`/ayuda/`): políticas de envío, cambios y devoluciones, y cancelación.
-- Mientras no haya fotos, los suéteres y calcetines se muestran con un dibujo de ejemplo en su color. Al subir una foto en el admin, se usa la foto.
+La arquitectura, los diagramas y las decisiones técnicas están en [docs/arquitectura.md](docs/arquitectura.md).
 
 ## Cómo correrlo (Windows, macOS o Linux)
 
-Requiere Python 3.11 o superior.
+Requiere Python 3.12 o superior. En macOS usa `python3` para crear el entorno; una vez activado,
+`python` ya funciona.
 
 ```bash
-# 1. Crear y activar entorno virtual
-python -m venv venv
+# 1. Crear y activar el entorno virtual
+python3 -m venv venv
 # Windows:
 venv\Scripts\activate
 # macOS / Linux:
 source venv/bin/activate
 
 # 2. Instalar dependencias
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
 # 3. Crear la base de datos y cargar el catálogo de ejemplo
 python manage.py migrate
@@ -52,29 +58,41 @@ python manage.py runserver
 - Tienda: http://127.0.0.1:8000/
 - Administración: http://127.0.0.1:8000/admin/
 
-## Pruebas
+No hace falta configurar nada: sin llaves de Stripe se usa un pago simulado y los correos se imprimen
+en la terminal. Para usar Stripe, copia `.env.example` como `.env` y sigue [docs/publicacion.md](docs/publicacion.md).
+
+## Pruebas y calidad
 
 ```bash
 pytest
+ruff check .
 ```
+
+GitHub Actions ejecuta esto en cada Pull Request, sobre PostgreSQL. La forma de trabajar en equipo está
+en [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Estructura
 
 ```
-tiendaWeb/          configuración del proyecto (settings, urls)
-catalogo/
-  models.py         modelos del catálogo
-  cotizacion.py     cálculo y validación de precios (lógica de negocio)
-  views.py          páginas y API de cotización
-  admin.py          panel de administración
-  management/commands/cargar_datos_demo.py
-  tests/            pruebas con pytest
-templates/          HTML (Bootstrap 5)
-static/css          estilos
-static/js           cotizador.js (cotización en vivo), simulador.js (dibujo del moño)
-                    y personalizador.js (pasos, Lo más vendido y Restablecer)
+tiendaWeb/          configuración, URLs y encabezados de seguridad
+catalogo/           productos, simulador, cotización y fechas de entrega
+  cotizacion.py     cálculo y validación de precios
+  entregas.py       fecha estimada de entrega
+carrito/
+  carrito.py        carrito en la sesión; siempre recotiza
+pedidos/
+  models.py         pedido, historial, pagos, solicitudes y configuración
+  servicios.py      reglas de negocio: crear, pagar, avanzar, cancelar
+  pagos.py          conexión con Stripe
+  notificaciones.py correos automáticos
+cuentas/            registro e inicio de sesión
+templates/          HTML por sección
+static/css          sistema de diseño propio
+static/js           cotizador.js, simulador.js, personalizador.js, producto.js y cantidad.js
 static/simulador/   capas del moño (PNG en gris), mapa del decorado y tiras de estampados
-docs/bitacora.md    plan baseline vs. real
+static/img/sueteres imágenes de los suéteres (generadas con IA)
+static/vendor       htmx
+docs/               arquitectura, manual, publicación y bitácora
 ```
 
 ## Formato de la selección (catálogo → cotización → carrito)
@@ -118,16 +136,9 @@ En el admin: **Combinaciones (lo más vendido) → Añadir**. Ponle nombre, elig
 
 En el admin, dentro del producto, cada **Parte** tiene el campo *Imagen capa*. Si se sube una imagen ahí, se usa en lugar de la de `static/simulador/`. Debe medir lo mismo que las demás capas.
 
-## Producción (PostgreSQL)
+## Producción
 
-Basta con definir variables de entorno:
-
-```
-DATABASE_URL=postgres://usuario:clave@host:5432/moneria
-DJANGO_SECRET_KEY=una-clave-larga-y-secreta
-DJANGO_DEBUG=0
-DJANGO_ALLOWED_HOSTS=mi-tienda.onrender.com
-```
+La tienda se publica en Render con PostgreSQL. Los pasos están en [docs/publicacion.md](docs/publicacion.md).
 
 ## Equipo
 

@@ -1,0 +1,6 @@
+{% load moneda %}
+<table class="importes">
+  <tr><th scope="row">Subtotal</th><td>{{ subtotal|pesos }}</td></tr>
+  <tr><th scope="row">Envío</th><td>{{ envio|pesos }}</td></tr>
+  <tr class="fila-total"><th scope="row">Total</th><td>{{ total|pesos }}</td></tr>
+</table>

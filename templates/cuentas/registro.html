@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Crear cuenta{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <div class="panel tarjeta-cuenta">
+    <h1>Crea tu cuenta</h1>
+    <p class="banda-prueba">Tienda de demostración: usa datos de prueba.</p>
+    <form class="formulario" method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_div }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn btn-primario btn-grande btn-bloque" type="submit">Crear cuenta</button>
+    </form>
+    <p class="enlaces-cuenta">Al crearla aceptas el <a href="{% url 'catalogo:privacidad' %}">aviso de privacidad</a>.</p>
+    <p class="enlaces-cuenta">¿Ya tienes cuenta? <a href="{% url 'cuentas:entrar' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Entra</a></p>
+  </div>
+</div>
+{% endblock %}

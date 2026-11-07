@@ -1,72 +1,113 @@
-{% load static %}<!doctype html>
+{% load static moneda %}<!doctype html>
 <html lang="es-MX">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block titulo %}Moñería{% endblock %} · Moñería</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="{% static 'css/tienda.css' %}?v={{ version_estaticos }}" rel="stylesheet">
+  <title>{% block titulo %}Tienda{% endblock %} · {{ nombre_tienda }}</title>
+  <meta name="description" content="{% block descripcion %}Productos de temporada, regalos y piezas personalizables. {{ lema_tienda }}{% endblock %}">
+  <meta name="theme-color" content="#f5f5f7">
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta property="og:site_name" content="{{ nombre_tienda }}">
+  <meta property="og:locale" content="es_MX">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_titulo %}{{ nombre_tienda }}{% endblock %}">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/tienda.css' %}?v={{ version_estaticos }}">
+  <meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false}'>
+  <script src="{% static 'vendor/htmx-2.0.4.min.js' %}" defer></script>
+  {% block cabecera %}{% endblock %}
 </head>
 <body>
-  <!-- Franja de aviso de temporada -->
-  <div class="aviso">🎄 Pedidos navideños: elabora hoy y recibe a tiempo para tus posadas · Envíos en CDMX y zona metropolitana</div>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
 
-  <!-- Barra superior: logo, categorías (de la base de datos) y carrito -->
+  <!-- Franja de aviso: se edita en la temporada vigente desde el admin -->
+  {% if temporada_vigente.aviso %}<div class="aviso">{{ temporada_vigente.aviso }}</div>{% endif %}
+
+  <!-- Barra superior: logo, categorías (de la base de datos), cuenta y carrito -->
   <header class="barra">
-    <nav class="navbar navbar-expand-md py-0">
-      <div class="container">
-        <a class="navbar-brand marca" href="{% url 'catalogo:inicio' %}">Moñería</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
-                aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="menu">
-          <ul class="navbar-nav me-auto menu">
-            {% for c in categorias_menu %}
-              <li class="nav-item">
-                <a class="nav-link {% if c.slug == 'kits' %}menu-kits{% endif %} {% if categoria_actual == c.slug %}activo{% endif %}"
-                   href="{{ c.get_absolute_url }}">{% if c.slug == 'kits' %}🎁 {% endif %}{{ c.nombre }}</a>
-              </li>
-            {% endfor %}
-          </ul>
-          <!-- El carrito se activa en la siguiente etapa -->
-          <span class="carrito-btn" title="Disponible muy pronto">🛒 Carrito <b>0</b></span>
-        </div>
+    <div class="contenedor barra-interior">
+      <a class="marca" href="{% url 'catalogo:inicio' %}">{{ nombre_tienda }}</a>
+      <nav class="barra-nav" aria-label="Categorías">
+        <ul class="menu">
+          {% for c in categorias_menu %}
+            <li><a href="{{ c.get_absolute_url }}" {% if categoria_actual == c.slug %}aria-current="page"{% endif %}>{{ c.nombre }}</a></li>
+          {% endfor %}
+          <li><a href="{% url 'catalogo:ayuda' %}">Soporte</a></li>
+        </ul>
+      </nav>
+      <div class="barra-acciones">
+        <a class="barra-icono" href="{% url 'pedidos:lista' %}" aria-label="{% if user.is_authenticated %}Mis pedidos{% else %}Entrar a mi cuenta{% endif %}">
+          <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#usuario"/></svg>
+        </a>
+        {% include "carrito/_contador.html" %}
+        <details class="menu-movil">
+          <summary class="barra-icono" aria-label="Abrir menú">
+            <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#menu"/></svg>
+          </summary>
+          <nav class="menu-movil-panel" aria-label="Menú">
+            {% for c in categorias_menu %}<a href="{{ c.get_absolute_url }}">{{ c.nombre }}</a>{% endfor %}
+            <a href="{% url 'catalogo:ayuda' %}">Soporte</a>
+          </nav>
+        </details>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <main>
+  {% if messages %}
+    <ul class="contenedor mensajes" role="status">
+      {% for mensaje in messages %}<li class="{{ mensaje.tags }}">{{ mensaje }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <main id="contenido">
     {% block contenido %}{% endblock %}
   </main>
 
-  <!-- Pie de página con políticas (requisito: cancelación y devolución) -->
+  <!-- Pie de página: políticas, cuenta y soporte siempre visible -->
   <footer class="pie">
-    <div class="container pie-grid">
-      <div>
-        <div class="marca">Moñería</div>
-        <p class="mb-0">Moños hechos a mano y prendas navideñas.<br>CDMX y zona metropolitana.</p>
+    <div class="contenedor">
+      <div class="pie-grid">
+        <nav aria-label="Tienda">
+          <h2>Tienda</h2>
+          {% for c in categorias_menu %}<a href="{{ c.get_absolute_url }}">{{ c.nombre }}</a>{% endfor %}
+        </nav>
+        <nav aria-label="Ayuda">
+          <h2>Ayuda</h2>
+          <a href="{% url 'catalogo:ayuda' %}#envios">Envíos y entregas</a>
+          <a href="{% url 'catalogo:ayuda' %}#devoluciones">Cambios y devoluciones</a>
+          <a href="{% url 'catalogo:ayuda' %}#cancelar">Cancelar un pedido</a>
+        </nav>
+        <nav aria-label="Cuenta">
+          <h2>Tu cuenta</h2>
+          <a href="{% url 'pedidos:lista' %}">Mis pedidos</a>
+          {% if user.is_authenticated %}
+            <form action="{% url 'cuentas:salir' %}" method="post">{% csrf_token %}<button class="btn btn-enlace" type="submit">Cerrar sesión</button></form>
+          {% else %}
+            <a href="{% url 'cuentas:entrar' %}">Entrar</a>
+            <a href="{% url 'cuentas:registro' %}">Crear cuenta</a>
+          {% endif %}
+        </nav>
+        <div class="pie-contacto">
+          <h2>Soporte técnico</h2>
+          <a href="tel:+52{{ tienda.telefono_soporte }}">
+            <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#telefono"/></svg>{{ tienda.telefono_soporte|telefono }}</a><br>
+          <a href="{{ tienda.enlace_whatsapp }}" target="_blank" rel="noopener">
+            <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#whatsapp"/></svg>WhatsApp</a>
+          <p>{{ tienda.horario_soporte }}</p>
+        </div>
       </div>
-      <div>
-        <h4>Tienda</h4>
-        {% for c in categorias_menu %}<a href="{{ c.get_absolute_url }}">{{ c.nombre }}</a>{% endfor %}
-      </div>
-      <div>
-        <h4>Ayuda</h4>
-        <a href="{% url 'catalogo:ayuda' %}#envios">Envíos y entregas</a>
-        <a href="{% url 'catalogo:ayuda' %}#devoluciones">Cambios y devoluciones</a>
-        <a href="{% url 'catalogo:ayuda' %}#cancelar">Cancelar un pedido</a>
-      </div>
-      <div>
-        <h4>Proyecto</h4>
-        <p class="mb-0 small">Negocios Electrónicos y Desarrollo Web<br>Facultad de Ingeniería, UNAM</p>
+      <div class="pie-legal">
+        <span>Proyecto académico de Negocios Electrónicos y Desarrollo Web, Facultad de Ingeniería, UNAM. Tienda de demostración: los pagos son de prueba y no se realizan ventas reales.</span>
+        <nav aria-label="Legal">
+          <a href="{% url 'catalogo:privacidad' %}">Privacidad</a>
+          <a href="{% url 'catalogo:terminos' %}">Términos</a>
+        </nav>
       </div>
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

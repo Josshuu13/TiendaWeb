@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load moneda %}
+{% block titulo %}Mis pedidos{% endblock %}
+{% block contenido %}
+<div class="contenedor-angosto texto">
+  <div class="pedido-cabecera" style="margin-top: 32px">
+    <h1>Mis pedidos</h1>
+    <form action="{% url 'cuentas:salir' %}" method="post">{% csrf_token %}<button class="btn btn-sm btn-suave" type="submit">Cerrar sesión</button></form>
+  </div>
+  {% for pedido in pedidos %}
+    <a class="pedido-fila" href="{{ pedido.get_absolute_url }}">
+      <div class="pedido-fila-arriba">
+        <span class="pedido-folio">{{ pedido.folio }}</span>
+        <span class="etiqueta estado-pedido estado-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span>
+      </div>
+      <span class="nota">{{ pedido.creado|date:"j \d\e F \d\e Y"|lower }} · {{ pedido.lineas.all|length }} producto{{ pedido.lineas.all|length|pluralize }} · {{ pedido.total|pesos }}</span>
+    </a>
+  {% empty %}
+    <div class="vacio">
+      <h2>Aún no tienes pedidos</h2>
+      <a class="btn btn-primario" href="{% url 'catalogo:lista' %}">Ver el catálogo</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

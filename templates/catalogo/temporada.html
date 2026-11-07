@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% comment %} Todos los productos de una temporada. {% endcomment %}
+{% block titulo %}{{ coleccion.nombre }}{% endblock %}
+{% block og_titulo %}{{ coleccion.nombre }} · {{ nombre_tienda }}{% endblock %}
+{% block descripcion %}{{ coleccion.descripcion|default:coleccion.titulo|truncatechars:155 }}{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <nav aria-label="Ruta" class="miga">
+    <ol>
+      <li><a href="{% url 'catalogo:inicio' %}">Inicio</a></li>
+      <li aria-current="page">{{ coleccion.nombre }}</li>
+    </ol>
+  </nav>
+  <h1 class="h-pagina">{{ coleccion.nombre }}</h1>
+  {% if coleccion.descripcion %}<p class="descripcion">{{ coleccion.descripcion }}</p>{% endif %}
+  <div class="productos">
+    {% for producto in productos %}
+      {% include "catalogo/_tarjeta.html" %}
+    {% empty %}
+      <p class="descripcion">Pronto habrá productos aquí. <a href="{% url 'catalogo:lista' %}">Ver el catálogo</a></p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
