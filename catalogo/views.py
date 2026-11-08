@@ -95,6 +95,23 @@ def lista(request, slug=None):
     )
     if len(filtros_color) < 2:   # con un solo color no hace falta filtrar
         filtros_color = []
+
+    # Categorías con un producto personalizable (Moños): arriba va la sección
+    # "Diseña el tuyo" con ese producto, y abajo los diseños listos para usar.
+    # Aquí no se muestra el filtro de color: el personalizable admite cualquier
+    # color y los diseños listos ya traen sus colores en la foto.
+    personalizable = productos.filter(personalizable=True).first() if categoria else None
+    colores_simulador = []
+    if personalizable:
+        filtros_color = []
+        # Los diseños listos salen en el orden en que se dieron de alta
+        # (el mismo orden que DISENOS_LISTOS en cargar_datos_demo.py).
+        productos = productos.exclude(pk=personalizable.pk).order_by("creado", "pk")
+        # Colores que se pueden elegir en el simulador (para los puntitos y el conteo).
+        colores_simulador = list(
+            Color.objects.filter(partes__producto=personalizable, activo=True)
+            .distinct().order_by("orden")
+        )
     if len(filtros_talla) < 2:
         filtros_talla = []
 
@@ -117,6 +134,8 @@ def lista(request, slug=None):
         "filtros_color": filtros_color,
         "talla_sel": talla_sel,
         "color_sel": color_sel,
+        "personalizable": personalizable,
+        "colores_simulador": colores_simulador,
     })
 
 

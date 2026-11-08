@@ -102,7 +102,7 @@ def test_la_personalizacion_se_conserva_aunque_cambie_el_catalogo(cliente):
     assert len(linea.seleccion) == 6 and len(linea.opciones) == 6
     Producto.objects.filter(slug="mono-clasico").update(precio_base=Decimal("999.00"), nombre="Otro")
     linea.refresh_from_db()
-    assert linea.precio_unitario == Decimal("120.00") and linea.nombre == "Moño clásico personalizable"
+    assert linea.precio_unitario == Decimal("85.00") and linea.nombre == "Moño clásico personalizable"
 
 
 def test_si_se_agota_mientras_compra_no_se_crea_nada(cliente):

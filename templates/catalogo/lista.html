@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% comment %}
   Lista de productos (todo el catálogo o una categoría) con filtros por talla y color.
   Los filtros se mandan en la URL: ?talla=nina&color=12
@@ -31,12 +32,48 @@
     </div>
   {% endif %}
 
-  <div class="productos">
-    {% for producto in productos %}
-      {% include "catalogo/_tarjeta.html" %}
-    {% empty %}
-      <p class="descripcion">No hay productos con esos filtros. <a href="?">Ver todos</a></p>
-    {% endfor %}
-  </div>
+  {% if personalizable %}
+    <!-- Sección "Diseña el tuyo": texto a la izquierda; moño y botón a la derecha
+         (en celular se acomoda uno debajo del otro). -->
+    <section class="seccion">
+      <div class="disena">
+        <div class="disena-texto">
+          <h3>{{ personalizable.nombre }}</h3>
+          <div class="disena-precio">Desde ${{ personalizable.precio_base|floatformat:0|intcomma }}</div>
+          <p><b>¿Buscas un color en especial?</b><br> Arma tu moño en el simulador:
+            {{ colores_simulador|length }} colores para cada parte, además de estampados.</p>
+          <!-- Todos los colores del simulador, como muestra -->
+          <div class="disena-paleta" aria-hidden="true">
+            {% for c in colores_simulador %}<i style="background: {{ c.codigo_hex }}" title="{{ c.nombre }}"></i>{% endfor %}
+          </div>
+        </div>
+        <div class="disena-mono">
+          <a href="{{ personalizable.get_absolute_url }}" class="disena-fondo" tabindex="-1">
+            {% include "catalogo/_imagen.html" with producto=personalizable %}
+          </a>
+          <a class="btn btn-primario btn-grande" href="{{ personalizable.get_absolute_url }}">Personalizar</a>
+        </div>
+      </div>
+    </section>
+
+    {% if productos %}
+      <section class="seccion">
+        <h2 class="titulo-seccion">Diseños listos para usar. <span>Combinaciones de uniforme, listas para enviar.</span></h2>
+        <div class="productos listos">
+          {% for producto in productos %}
+            {% include "catalogo/_tarjeta.html" %}
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  {% else %}
+    <div class="productos">
+      {% for producto in productos %}
+        {% include "catalogo/_tarjeta.html" %}
+      {% empty %}
+        <p class="descripcion">No hay productos con esos filtros. <a href="?">Ver todos</a></p>
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -46,10 +46,17 @@ COLORES = [
     ("Rosa mexicano", "#E4007C", Color.BASICO),
     ("Lila", "#B79CD9", Color.BASICO),
     ("Turquesa", "#2BB3B1", Color.BASICO),
+    # Agregados el 08/11/2026. Revisen que cada tono corresponda a un listón que
+    # realmente tengan o puedan comprar, y ajusten el código si su listón es distinto.
+    ("Jade", "#00A86B", Color.BASICO),
+    ("Naranja", "#F2711C", Color.BASICO),
+    ("Palo de rosa", "#D8A7A0", Color.BASICO),
+    ("Café arena", "#C2A27C", Color.BASICO),
+    ("Azul turquesa", "#30B5C8", Color.BASICO),
 ]
 
 CATEGORIAS = [
-    ("Moños", "monos", "Personalízalo en el simulador o elige uno escolar listo para usar.", 1),
+    ("Moños", "monos", "Diseña el tuyo en el simulador o elige uno listo para el uniforme.", 1),
     ("Suéteres navideños", "sueteres", "Tallas para niña y adulto. Cambio de talla sin costo.", 2),
     ("Calcetines", "calcetines", "Diseños navideños que combinan con todo.", 3),
     ("Kits navideños", "kits", "Moño, suéter y calcetines a juego. Más fácil de regalar y con descuento.", 4),
@@ -115,6 +122,48 @@ COMBINACIONES = [
                         "decorado": "Azul marino", "tiras": "Blanco", "nudo": "Azul marino"}, None),
 ]
 
+# ---------------------------------------------------------------------------
+# Diseños listos para usar: moños de uniforme que se venden tal cual, sin pasar
+# por el simulador (por eso cuestan menos). Cada diseño es un producto.
+#
+# Para cada parte se indica su color. Para los de 2 colores se usa la función
+# dos_colores(), que siempre reparte igual:
+#   primer color  -> base superior, patas, tiras y nudo
+#   segundo color -> base inferior y decorado (el lazo grande del frente)
+# Así, el orden del nombre decide qué color se ve al frente.
+#
+# Las imágenes (static/img/monos/<slug>.webp) se generan con las capas del
+# simulador:  python manage.py generar_imagenes_monos
+# ---------------------------------------------------------------------------
+PRECIO_DISENO_LISTO = "85.00"   # precio provisional; cámbienlo aquí o en el admin
+
+
+def un_color(color, tiras="Blanco"):
+    """Moño de un solo color con tiras blancas (los "clásicos")."""
+    return {"patas": color, "baseabajo": color, "basearriba": color,
+            "decorado": color, "tiras": tiras, "nudo": color}
+
+
+def dos_colores(primero, segundo):
+    """Moño de 2 colores con la estructura acordada (ver arriba)."""
+    return {"basearriba": primero, "patas": primero, "tiras": primero, "nudo": primero,
+            "baseabajo": segundo, "decorado": segundo}
+
+
+# (slug, nombre, {parte: color})
+DISENOS_LISTOS = [
+    ("mono-azul-marino-clasico", "Azul marino clásico", un_color("Azul marino")),
+    ("mono-guinda-clasico", "Guinda clásico", un_color("Guinda")),
+    ("mono-verde-oscuro-clasico", "Verde oscuro clásico", un_color("Verde botella")),
+    ("mono-gris-con-blanco", "Gris con blanco", dos_colores("Gris Oxford", "Blanco")),
+    ("mono-azul-cielo-con-gris", "Azul cielo con gris", dos_colores("Celeste", "Gris Oxford")),
+    ("mono-amarillo-con-azul-marino", "Amarillo con azul marino", dos_colores("Amarillo oro", "Azul marino")),
+    ("mono-rojo-con-azul-marino", "Rojo con azul marino", dos_colores("Rojo navidad", "Azul marino")),
+    ("mono-rojo-blanco-azul-marino", "Rojo, blanco y azul marino",
+     {"basearriba": "Rojo navidad", "patas": "Rojo navidad", "nudo": "Rojo navidad",
+      "baseabajo": "Blanco", "tiras": "Blanco", "decorado": "Azul marino"}),
+]
+
 # Listones estampados de ejemplo (sus imágenes están en static/simulador/estampados/).
 ESTAMPADOS = [
     ("Tejido rojo", "tejido-rojo", "25.00"),
@@ -155,7 +204,7 @@ class Command(BaseCommand):
                 "descripcion": "Elige el color de cada parte del moño o un listón "
                                "estampado para el decorado, y mira cómo queda antes "
                                "de comprarlo.",
-                "precio_base": Decimal("120.00"),
+                "precio_base": Decimal("85.00"),
                 "dias_elaboracion": 3,
                 "personalizable": True,
                 "destacado": True,
@@ -201,16 +250,25 @@ class Command(BaseCommand):
                     combinacion=combo, parte=partes[clave], defaults={"color": colores[color]}
                 )
 
-        # --- Moño escolar que se vende tal cual (con existencias) ---
-        escolar = self._producto(
-            "mono-escolar", cats["monos"], "Moño escolar", "85.00", 0,
-            "Moño listo para usar, en los colores de uniforme más comunes.", destacado=True,
-        )
-        stock_escolar = {"Azul marino": 20, "Guinda": 15, "Blanco": 12, "Verde botella": 0}
-        # Quitar variantes de colores anteriores para no chocar con los SKU nuevos.
-        escolar.variantes.exclude(color__nombre__in=stock_escolar).delete()
-        for color, stock in stock_escolar.items():
-            self._variante(escolar, "UNI", colores[color], stock)
+        # --- Diseños listos para usar (moños de uniforme, ver DISENOS_LISTOS) ---
+        # El "Moño escolar" de la versión anterior deja de mostrarse.
+        Producto.objects.filter(slug="mono-escolar").update(activo=False, destacado=False)
+        for slug, nombre, por_parte in DISENOS_LISTOS:
+            # Colores del diseño sin repetir, para la descripción: "celeste y gris oxford".
+            usados = [c.lower() for c in dict.fromkeys(por_parte.values())]
+            lista_colores = usados[0] if len(usados) == 1 else ", ".join(usados[:-1]) + " y " + usados[-1]
+            # En el carrito y los pedidos se lee "Moño azul marino clásico".
+            nombre_producto = f"Moño {nombre[0].lower()}{nombre[1:]}"
+            p = self._producto(slug, cats["monos"], nombre_producto, PRECIO_DISENO_LISTO, 0,
+                               f"Moño listo para usar, en colores de uniforme: {lista_colores}. "
+                               "Se envía tal cual, sin pasar por el simulador.")
+            # Una sola variante sin color: el diseño ya trae sus colores.
+            # Así la página del producto no muestra un selector de color.
+            Variante.objects.update_or_create(
+                producto=p, talla="UNI", color=None,
+                defaults={"sku": f"ML-{slug.upper()}"[:40], "existencias": 15, "activa": True},
+            )
+            p.variantes.exclude(talla="UNI", color=None).delete()
 
         # --- Suéteres (un producto por diseño, en tallas de niña y adulto) ---
         Producto.objects.filter(slug__in=SUETERES_RETIRADOS).update(activo=False, destacado=False)
@@ -267,7 +325,7 @@ class Command(BaseCommand):
         )
         temporada.productos.set(Producto.objects.filter(
             activo=True, categoria__slug__in=["monos", "sueteres", "kits"],
-        ).exclude(slug__in=["mono-escolar", "kit-escolar"]))
+        ).exclude(slug__in=["mono-escolar", "kit-escolar"] + [d[0] for d in DISENOS_LISTOS]))
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Categoria.objects.count()} categorías, "
