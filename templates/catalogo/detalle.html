@@ -165,6 +165,14 @@
                 {% endfor %}
               </div>
 
+              <!-- Pedido de un color que no está en la paleta: abre WhatsApp con el
+                   mensaje ya escrito, usando el número de "Configuración de la tienda". -->
+              <p class="color-especial">
+                ¿No encuentras tu color?
+                <a href="https://wa.me/52{{ tienda.whatsapp }}?text={{ 'Hola, quiero un moño con un color que no aparece en el simulador. La parte es: '|urlencode }}{{ parte.nombre|urlencode }}"
+                   target="_blank" rel="noopener">Pregúntanos por WhatsApp</a>
+              </p>
+
               <!-- Navegación entre pasos -->
               <div class="parte-navegar">
                 <button type="button" class="btn btn-sm btn-suave" data-ir="anterior"

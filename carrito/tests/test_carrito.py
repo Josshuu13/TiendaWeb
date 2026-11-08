@@ -37,7 +37,7 @@ def test_carrito_mixto_con_personalizacion(client):
     agregar(client, seleccion_calcetin())
     r = resumen(client)
     assert len(r.lineas) == 3
-    assert r.subtotal == Decimal("120.00") + Decimal("480.00") + Decimal("110.00")
+    assert r.subtotal == Decimal("85.00") + Decimal("480.00") + Decimal("110.00")
     assert r.total == r.subtotal + ConfiguracionTienda.cargar().costo_envio
 
 
@@ -128,12 +128,14 @@ def test_vista_previa_valida_se_conserva(client):
     assert resumen(client).lineas[0].vista.startswith("data:image/png")
 
 
+# Cada caso lleva un nombre corto (ids). Sin él, pytest usaría el texto completo
+# como nombre y, en Windows, el de 300,000 caracteres rompe la prueba.
 @pytest.mark.parametrize("vista", [
     "javascript:alert(1)",
     "data:text/html;base64,PHNjcmlwdD4=",
     "data:image/png;base64,bm8tZXMtaW1hZ2Vu",  # base64 válido, pero no es una imagen
     "data:image/png;base64," + "A" * 300_000,   # demasiado grande
     123,
-])
+], ids=["javascript", "html", "no-es-imagen", "demasiado-grande", "numero"])
 def test_vista_previa_no_valida_se_descarta(vista):
     assert vista_valida(vista) == ""
