@@ -264,8 +264,15 @@ s { color: var(--suave); }
 .galeria {
   display: grid; place-items: center; min-height: 340px; height: min(66vh, 560px); padding: 32px;
   border-radius: var(--radio-l); background: var(--superficie); box-shadow: var(--sombra);
+  /* La fila y la columna miden exactamente el espacio del recuadro, así la imagen
+     no puede crecer más que él. overflow: hidden es una protección extra. */
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
 }
-.galeria > img { max-height: 100%; width: min(100%, 440px); object-fit: contain; }
+/* La imagen ocupa todo el recuadro, pero object-fit: contain la encoge sin
+   deformarla para que se vea completa, sea alta (moño) o ancha (suéter). */
+.galeria > img { width: 100%; height: 100%; object-fit: contain; }
 .galeria > .dibujo { height: 75%; }
 .galeria .kit-piezas img { height: 220px; }
 .galeria .kit-piezas .dibujo { height: 170px; }

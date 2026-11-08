@@ -150,7 +150,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Versión de los archivos CSS/JS. Se agrega a sus URL (?v=...) para que el
 # navegador descargue la versión nueva en lugar de usar la que tiene guardada.
 # Cámbienla cada vez que modifiquen un CSS o JS.
-VERSION_ESTATICOS = "2026.11.09"
+VERSION_ESTATICOS = "2026.11.10"
 
 # Reglas de negocio configurables
 DIAS_ENVIO = int(os.environ.get("DIAS_ENVIO", "3"))
