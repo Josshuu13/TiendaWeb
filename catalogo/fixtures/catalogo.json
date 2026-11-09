@@ -1,0 +1,2022 @@
+[
+{
+  "model": "catalogo.categoria",
+  "pk": 1,
+  "fields": {
+    "nombre": "Moños",
+    "slug": "monos",
+    "descripcion": "Diseña el tuyo en el simulador o elige uno listo para el uniforme.",
+    "guia_tallas": "",
+    "orden": 1
+  }
+},
+{
+  "model": "catalogo.categoria",
+  "pk": 2,
+  "fields": {
+    "nombre": "Suéteres navideños",
+    "slug": "sueteres",
+    "descripcion": "Tallas para niña y adulto. Cambio de talla sin costo.",
+    "guia_tallas": "2-4: niña de 2 a 4 años\n6-8: niña de 6 a 8 años\n10-12: niña de 10 a 12 años\nCH / M / G: adulto, pecho de 88-94 / 96-102 / 104-110 cm",
+    "orden": 2
+  }
+},
+{
+  "model": "catalogo.categoria",
+  "pk": 3,
+  "fields": {
+    "nombre": "Calcetines",
+    "slug": "calcetines",
+    "descripcion": "Diseños navideños que combinan con todo.",
+    "guia_tallas": "",
+    "orden": 3
+  }
+},
+{
+  "model": "catalogo.categoria",
+  "pk": 4,
+  "fields": {
+    "nombre": "Kits navideños",
+    "slug": "kits",
+    "descripcion": "Moño, suéter y calcetines a juego. Más fácil de regalar y con descuento.",
+    "guia_tallas": "",
+    "orden": 4
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 1,
+  "fields": {
+    "nombre": "Blanco",
+    "codigo_hex": "#F7F7F4",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 0
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 2,
+  "fields": {
+    "nombre": "Azul marino",
+    "codigo_hex": "#1C2541",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 1
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 3,
+  "fields": {
+    "nombre": "Azul rey",
+    "codigo_hex": "#1F4FB4",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 2
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 4,
+  "fields": {
+    "nombre": "Celeste",
+    "codigo_hex": "#8EC1E6",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 3
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 5,
+  "fields": {
+    "nombre": "Guinda",
+    "codigo_hex": "#6E1428",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 4
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 6,
+  "fields": {
+    "nombre": "Verde botella",
+    "codigo_hex": "#0F4D32",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 5
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 7,
+  "fields": {
+    "nombre": "Gris Oxford",
+    "codigo_hex": "#4A4E54",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 6
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 8,
+  "fields": {
+    "nombre": "Café",
+    "codigo_hex": "#4E2E1E",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 7
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 9,
+  "fields": {
+    "nombre": "Amarillo oro",
+    "codigo_hex": "#E8B517",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 8
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 10,
+  "fields": {
+    "nombre": "Negro",
+    "codigo_hex": "#161616",
+    "grupo": "escolar",
+    "activo": true,
+    "orden": 9
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 11,
+  "fields": {
+    "nombre": "Rojo navidad",
+    "codigo_hex": "#B3122E",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 10
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 12,
+  "fields": {
+    "nombre": "Verde pino",
+    "codigo_hex": "#1F5E3A",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 11
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 13,
+  "fields": {
+    "nombre": "Verde navidad",
+    "codigo_hex": "#2E8B3E",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 12
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 14,
+  "fields": {
+    "nombre": "Vino",
+    "codigo_hex": "#6B1E2E",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 13
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 15,
+  "fields": {
+    "nombre": "Dorado",
+    "codigo_hex": "#C9A227",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 14
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 16,
+  "fields": {
+    "nombre": "Plateado",
+    "codigo_hex": "#B9BCC2",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 15
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 17,
+  "fields": {
+    "nombre": "Crema",
+    "codigo_hex": "#EFE6D2",
+    "grupo": "navideno",
+    "activo": true,
+    "orden": 16
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 18,
+  "fields": {
+    "nombre": "Rosa pastel",
+    "codigo_hex": "#F4B6C2",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 17
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 19,
+  "fields": {
+    "nombre": "Rosa mexicano",
+    "codigo_hex": "#E4007C",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 18
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 20,
+  "fields": {
+    "nombre": "Lila",
+    "codigo_hex": "#B79CD9",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 19
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 21,
+  "fields": {
+    "nombre": "Turquesa",
+    "codigo_hex": "#2BB3B1",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 20
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 22,
+  "fields": {
+    "nombre": "Jade",
+    "codigo_hex": "#00A86B",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 21
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 23,
+  "fields": {
+    "nombre": "Naranja",
+    "codigo_hex": "#F2711C",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 22
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 24,
+  "fields": {
+    "nombre": "Palo de rosa",
+    "codigo_hex": "#D8A7A0",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 23
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 25,
+  "fields": {
+    "nombre": "Café arena",
+    "codigo_hex": "#C2A27C",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 24
+  }
+},
+{
+  "model": "catalogo.color",
+  "pk": 26,
+  "fields": {
+    "nombre": "Azul turquesa",
+    "codigo_hex": "#30B5C8",
+    "grupo": "basico",
+    "activo": true,
+    "orden": 25
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 1,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño clásico personalizable",
+    "slug": "mono-clasico",
+    "descripcion": "Elige el color de cada parte del moño o un listón estampado para el decorado, y mira cómo queda antes de comprarlo.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 3,
+    "personalizable": true,
+    "imagen": "",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-08T23:59:51.220Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 2,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño azul marino clásico",
+    "slug": "mono-azul-marino-clasico",
+    "descripcion": "Moño listo para usar, en colores de uniforme: azul marino y blanco. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.258Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 3,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño guinda clásico",
+    "slug": "mono-guinda-clasico",
+    "descripcion": "Moño listo para usar, en colores de uniforme: guinda y blanco. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.260Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 4,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño verde oscuro clásico",
+    "slug": "mono-verde-oscuro-clasico",
+    "descripcion": "Moño listo para usar, en colores de uniforme: verde botella y blanco. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.262Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 5,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño gris con blanco",
+    "slug": "mono-gris-con-blanco",
+    "descripcion": "Moño listo para usar, en colores de uniforme: gris oxford y blanco. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.263Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 6,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño azul cielo con gris",
+    "slug": "mono-azul-cielo-con-gris",
+    "descripcion": "Moño listo para usar, en colores de uniforme: celeste y gris oxford. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.264Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 7,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño amarillo con azul marino",
+    "slug": "mono-amarillo-con-azul-marino",
+    "descripcion": "Moño listo para usar, en colores de uniforme: amarillo oro y azul marino. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.266Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 8,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño rojo con azul marino",
+    "slug": "mono-rojo-con-azul-marino",
+    "descripcion": "Moño listo para usar, en colores de uniforme: rojo navidad y azul marino. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.269Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 9,
+  "fields": {
+    "categoria": 1,
+    "nombre": "Moño rojo, blanco y azul marino",
+    "slug": "mono-rojo-blanco-azul-marino",
+    "descripcion": "Moño listo para usar, en colores de uniforme: rojo navidad, blanco y azul marino. Se envía tal cual, sin pasar por el simulador.",
+    "precio_base": "85.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.272Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 10,
+  "fields": {
+    "categoria": 2,
+    "nombre": "Suéter Renos azul marino",
+    "slug": "sueter-renos-azul",
+    "descripcion": "Dos renos tejidos entre copos de nieve y una franja de pinos. Abrigador y perfecto para posadas.",
+    "precio_base": "450.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-08T23:59:51.276Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 11,
+  "fields": {
+    "categoria": 2,
+    "nombre": "Suéter Santa",
+    "slug": "sueter-santa",
+    "descripcion": "Santa Claus al frente con pinos y renos en la parte baja. El clásico de las fotos familiares.",
+    "precio_base": "480.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.282Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 12,
+  "fields": {
+    "categoria": 2,
+    "nombre": "Suéter Muñeco de nieve",
+    "slug": "sueter-muneco-nieve",
+    "descripcion": "Muñeco de nieve con bufanda roja sobre tejido gris. Combina con moños de cualquier color.",
+    "precio_base": "450.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.286Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 13,
+  "fields": {
+    "categoria": 2,
+    "nombre": "Suéter Osito",
+    "slug": "sueter-osito",
+    "descripcion": "Osito con gorro de Santa, copos y corazones. Tierno y fácil de combinar con rojo o dorado.",
+    "precio_base": "470.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.294Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 14,
+  "fields": {
+    "categoria": 2,
+    "nombre": "Suéter Merry Christmas",
+    "slug": "sueter-merry-christmas",
+    "descripcion": "Reno sonriente con letras Merry Christmas sobre tejido negro.",
+    "precio_base": "480.00",
+    "precio_anterior": null,
+    "dias_elaboracion": 0,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.298Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 17,
+  "fields": {
+    "categoria": 4,
+    "nombre": "Kit Reno rojo",
+    "slug": "kit-reno-rojo",
+    "descripcion": "Moño navideño + Suéter Santa + Calcetines Santa, en rojo a juego.",
+    "precio_base": "580.00",
+    "precio_anterior": "680.00",
+    "dias_elaboracion": 3,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-08T23:59:51.310Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 18,
+  "fields": {
+    "categoria": 4,
+    "nombre": "Kit Pino",
+    "slug": "kit-pino",
+    "descripcion": "Moño verde pino + Suéter Osito + Calcetines Rayas.",
+    "precio_base": "590.00",
+    "precio_anterior": "695.00",
+    "dias_elaboracion": 3,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-08T23:59:51.314Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 19,
+  "fields": {
+    "categoria": 4,
+    "nombre": "Kit Vino y dorado",
+    "slug": "kit-vino-dorado",
+    "descripcion": "Moño vino y dorado + suéter + calcetines, ideal para posadas.",
+    "precio_base": "585.00",
+    "precio_anterior": "685.00",
+    "dias_elaboracion": 3,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-08T23:59:51.317Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 20,
+  "fields": {
+    "categoria": 4,
+    "nombre": "Kit Escolar",
+    "slug": "kit-escolar",
+    "descripcion": "Moño escolar + calcetines (sin suéter), en colores de uniforme.",
+    "precio_base": "170.00",
+    "precio_anterior": "195.00",
+    "dias_elaboracion": 3,
+    "personalizable": false,
+    "imagen": "",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-08T23:59:51.319Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 21,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Santa Claus",
+    "slug": "calcetines-santa-claus",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.\r\n\r\nSúper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres.",
+    "precio_base": "110.00",
+    "precio_anterior": "130.00",
+    "dias_elaboracion": 5,
+    "personalizable": false,
+    "imagen": "productos/calcetines_1.png",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-09T00:13:18.549Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 22,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Muñeco de Nieve",
+    "slug": "calcetines-muneco-de-nieve",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.\r\n\r\nSúper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres.",
+    "precio_base": "90.00",
+    "precio_anterior": "110.00",
+    "dias_elaboracion": 5,
+    "personalizable": false,
+    "imagen": "productos/calcetines_2.png",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-09T00:23:25.875Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 23,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Renos de Santa",
+    "slug": "calcetines-renos-de-santa",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.\r\n\r\nSúper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres.",
+    "precio_base": "90.00",
+    "precio_anterior": "110.00",
+    "dias_elaboracion": 5,
+    "personalizable": false,
+    "imagen": "productos/calcetines_3.png",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-09T00:32:21.177Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 24,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Rodolfo el Reno",
+    "slug": "calcetines-rodolfo-el-reno",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.\r\n\r\nSúper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres.",
+    "precio_base": "110.00",
+    "precio_anterior": "130.00",
+    "dias_elaboracion": 5,
+    "personalizable": false,
+    "imagen": "productos/calcetines_4.png",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-09T00:36:35.829Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 25,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Hombre de Galleta",
+    "slug": "calcetines-hombre-de-galleta",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.\r\n\r\nSúper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres.",
+    "precio_base": "90.00",
+    "precio_anterior": "110.00",
+    "dias_elaboracion": 5,
+    "personalizable": false,
+    "imagen": "productos/calcetines_5.png",
+    "activo": true,
+    "destacado": false,
+    "creado": "2026-11-09T00:39:51.219Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 26,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Muñeco de Nieve Completo",
+    "slug": "calcetines-muneco-de-nieve-completo",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.\r\n\r\nSúper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres.",
+    "precio_base": "110.00",
+    "precio_anterior": "130.00",
+    "dias_elaboracion": 5,
+    "personalizable": false,
+    "imagen": "productos/calcetines_6.png",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-09T00:42:49.334Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 27,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Renos de Santa algodón crema",
+    "slug": "calcetines-renos-de-santa-algodon-crema",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas de algodón. Diseñadas con fibras naturales de alta calidad y un interior ultrasuave que mantendrá tus pies calientes, frescos y cómodos durante toda la temporada.\r\n\r\nAlgodón Premium: Exterior de algodón transpirable y resistente para máxima comodidad.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo, elástico y adaptable, perfecto tanto para hombres como para mujeres.",
+    "precio_base": "60.00",
+    "precio_anterior": "75.00",
+    "dias_elaboracion": 3,
+    "personalizable": false,
+    "imagen": "productos/calcetines_8.png",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-09T01:45:55.969Z"
+  }
+},
+{
+  "model": "catalogo.producto",
+  "pk": 28,
+  "fields": {
+    "categoria": 3,
+    "nombre": "Calcetines Renos de Santa algodón negros",
+    "slug": "calcetines-renos-de-santa-algodon-negros",
+    "descripcion": "¡Llegó la Navidad a tus Pies! 🎄🧦\r\nAbriga tus días festivos con nuestras calcetas navideñas de algodón. Diseñadas con fibras naturales de alta calidad y un interior ultrasuave que mantendrá tus pies calientes, frescos y cómodos durante toda la temporada.\r\n\r\nAlgodón Premium: Exterior de algodón transpirable y resistente para máxima comodidad.\r\n\r\nDiseño Unisex y Unitalla: Ajuste cómodo, elástico y adaptable, perfecto tanto para hombres como para mujeres.",
+    "precio_base": "60.00",
+    "precio_anterior": "75.00",
+    "dias_elaboracion": 3,
+    "personalizable": false,
+    "imagen": "productos/calcetines_7_QotIjfJ.png",
+    "activo": true,
+    "destacado": true,
+    "creado": "2026-11-09T01:50:05.455Z"
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 1,
+  "fields": {
+    "producto": 2,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-AZUL-MARINO-CLASICO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 2,
+  "fields": {
+    "producto": 3,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-GUINDA-CLASICO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 3,
+  "fields": {
+    "producto": 4,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-VERDE-OSCURO-CLASICO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 4,
+  "fields": {
+    "producto": 5,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-GRIS-CON-BLANCO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 5,
+  "fields": {
+    "producto": 6,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-AZUL-CIELO-CON-GRIS",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 6,
+  "fields": {
+    "producto": 7,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-AMARILLO-CON-AZUL-MARINO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 7,
+  "fields": {
+    "producto": 8,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-ROJO-CON-AZUL-MARINO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 8,
+  "fields": {
+    "producto": 9,
+    "talla": "UNI",
+    "color": null,
+    "sku": "ML-MONO-ROJO-BLANCO-AZUL-MARINO",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 9,
+  "fields": {
+    "producto": 10,
+    "talla": "2-4",
+    "color": 2,
+    "sku": "SUETER-RENOS-2-4-AZUMAR",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 10,
+  "fields": {
+    "producto": 10,
+    "talla": "6-8",
+    "color": 2,
+    "sku": "SUETER-RENOS-6-8-AZUMAR",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 11,
+  "fields": {
+    "producto": 10,
+    "talla": "10-12",
+    "color": 2,
+    "sku": "SUETER-RENOS-10-12-AZUMAR",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 12,
+  "fields": {
+    "producto": 10,
+    "talla": "CH",
+    "color": 2,
+    "sku": "SUETER-RENOS-CH-AZUMAR",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 13,
+  "fields": {
+    "producto": 10,
+    "talla": "M",
+    "color": 2,
+    "sku": "SUETER-RENOS-M-AZUMAR",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 14,
+  "fields": {
+    "producto": 10,
+    "talla": "G",
+    "color": 2,
+    "sku": "SUETER-RENOS-G-AZUMAR",
+    "existencias": 4,
+    "precio_extra": "40.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 15,
+  "fields": {
+    "producto": 11,
+    "talla": "2-4",
+    "color": 11,
+    "sku": "SUETER-SANTA-2-4-ROJNAV",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 16,
+  "fields": {
+    "producto": 11,
+    "talla": "6-8",
+    "color": 11,
+    "sku": "SUETER-SANTA-6-8-ROJNAV",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 17,
+  "fields": {
+    "producto": 11,
+    "talla": "10-12",
+    "color": 11,
+    "sku": "SUETER-SANTA-10-12-ROJNAV",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 18,
+  "fields": {
+    "producto": 11,
+    "talla": "CH",
+    "color": 11,
+    "sku": "SUETER-SANTA-CH-ROJNAV",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 19,
+  "fields": {
+    "producto": 11,
+    "talla": "M",
+    "color": 11,
+    "sku": "SUETER-SANTA-M-ROJNAV",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 20,
+  "fields": {
+    "producto": 11,
+    "talla": "G",
+    "color": 11,
+    "sku": "SUETER-SANTA-G-ROJNAV",
+    "existencias": 4,
+    "precio_extra": "40.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 21,
+  "fields": {
+    "producto": 12,
+    "talla": "2-4",
+    "color": 7,
+    "sku": "SUETER-MUNEC-2-4-GRIOXF",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 22,
+  "fields": {
+    "producto": 12,
+    "talla": "6-8",
+    "color": 7,
+    "sku": "SUETER-MUNEC-6-8-GRIOXF",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 23,
+  "fields": {
+    "producto": 12,
+    "talla": "10-12",
+    "color": 7,
+    "sku": "SUETER-MUNEC-10-12-GRIOXF",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 24,
+  "fields": {
+    "producto": 12,
+    "talla": "CH",
+    "color": 7,
+    "sku": "SUETER-MUNEC-CH-GRIOXF",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 25,
+  "fields": {
+    "producto": 12,
+    "talla": "M",
+    "color": 7,
+    "sku": "SUETER-MUNEC-M-GRIOXF",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 26,
+  "fields": {
+    "producto": 12,
+    "talla": "G",
+    "color": 7,
+    "sku": "SUETER-MUNEC-G-GRIOXF",
+    "existencias": 4,
+    "precio_extra": "40.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 27,
+  "fields": {
+    "producto": 13,
+    "talla": "2-4",
+    "color": 12,
+    "sku": "SUETER-OSITO-2-4-VERPIN",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 28,
+  "fields": {
+    "producto": 13,
+    "talla": "6-8",
+    "color": 12,
+    "sku": "SUETER-OSITO-6-8-VERPIN",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 29,
+  "fields": {
+    "producto": 13,
+    "talla": "10-12",
+    "color": 12,
+    "sku": "SUETER-OSITO-10-12-VERPIN",
+    "existencias": 0,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 30,
+  "fields": {
+    "producto": 13,
+    "talla": "CH",
+    "color": 12,
+    "sku": "SUETER-OSITO-CH-VERPIN",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 31,
+  "fields": {
+    "producto": 13,
+    "talla": "M",
+    "color": 12,
+    "sku": "SUETER-OSITO-M-VERPIN",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 32,
+  "fields": {
+    "producto": 13,
+    "talla": "G",
+    "color": 12,
+    "sku": "SUETER-OSITO-G-VERPIN",
+    "existencias": 4,
+    "precio_extra": "40.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 33,
+  "fields": {
+    "producto": 14,
+    "talla": "2-4",
+    "color": 10,
+    "sku": "SUETER-MERRY-2-4-NEG",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 34,
+  "fields": {
+    "producto": 14,
+    "talla": "6-8",
+    "color": 10,
+    "sku": "SUETER-MERRY-6-8-NEG",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 35,
+  "fields": {
+    "producto": 14,
+    "talla": "10-12",
+    "color": 10,
+    "sku": "SUETER-MERRY-10-12-NEG",
+    "existencias": 6,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 36,
+  "fields": {
+    "producto": 14,
+    "talla": "CH",
+    "color": 10,
+    "sku": "SUETER-MERRY-CH-NEG",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 37,
+  "fields": {
+    "producto": 14,
+    "talla": "M",
+    "color": 10,
+    "sku": "SUETER-MERRY-M-NEG",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 38,
+  "fields": {
+    "producto": 14,
+    "talla": "G",
+    "color": 10,
+    "sku": "SUETER-MERRY-G-NEG",
+    "existencias": 4,
+    "precio_extra": "40.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 47,
+  "fields": {
+    "producto": 17,
+    "talla": "UNI",
+    "color": 11,
+    "sku": "KIT-RENO-ROJ-UNI-ROJNAV",
+    "existencias": 8,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 48,
+  "fields": {
+    "producto": 18,
+    "talla": "UNI",
+    "color": 12,
+    "sku": "KIT-PINO-UNI-VERPIN",
+    "existencias": 8,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 49,
+  "fields": {
+    "producto": 19,
+    "talla": "UNI",
+    "color": 14,
+    "sku": "KIT-VINO-DOR-UNI-VIN",
+    "existencias": 8,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 50,
+  "fields": {
+    "producto": 20,
+    "talla": "UNI",
+    "color": 2,
+    "sku": "KIT-ESCOLAR-UNI-AZUMAR",
+    "existencias": 8,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 51,
+  "fields": {
+    "producto": 21,
+    "talla": "UNI",
+    "color": 11,
+    "sku": "CALCETINES-SANTA-CLA-UNI-ROJNAV",
+    "existencias": 10,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 52,
+  "fields": {
+    "producto": 22,
+    "talla": "UNI",
+    "color": 13,
+    "sku": "CALCETINES-MUNECO-DE-UNI-VERNAV",
+    "existencias": 4,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 53,
+  "fields": {
+    "producto": 23,
+    "talla": "UNI",
+    "color": 11,
+    "sku": "CALCETINES-RENOS-DE--UNI-ROJNAV",
+    "existencias": 20,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 54,
+  "fields": {
+    "producto": 24,
+    "talla": "UNI",
+    "color": 1,
+    "sku": "CALCETINES-RODOLFO-E-UNI-BLA",
+    "existencias": 20,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 55,
+  "fields": {
+    "producto": 25,
+    "talla": "UNI",
+    "color": 11,
+    "sku": "CALCETINES-HOMBRE-DE-UNI-ROJNAV",
+    "existencias": 30,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 56,
+  "fields": {
+    "producto": 26,
+    "talla": "UNI",
+    "color": 1,
+    "sku": "CALCETINES-MUNECO-DE-UNI-BLA",
+    "existencias": 10,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 57,
+  "fields": {
+    "producto": 27,
+    "talla": "UNI",
+    "color": 17,
+    "sku": "CALCETINES-RENOS-DE--UNI-CRE",
+    "existencias": 20,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.variante",
+  "pk": 58,
+  "fields": {
+    "producto": 28,
+    "talla": "UNI",
+    "color": 10,
+    "sku": "CALCETINES-RENOS-DE--UNI-NEG",
+    "existencias": 15,
+    "precio_extra": "0.00",
+    "activa": true
+  }
+},
+{
+  "model": "catalogo.parte",
+  "pk": 1,
+  "fields": {
+    "producto": 1,
+    "clave": "patas",
+    "nombre": "Patas",
+    "orden": 1,
+    "imagen_capa": "",
+    "color_inicial": 11,
+    "admite_estampado": false,
+    "paso": 1,
+    "colores": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "catalogo.parte",
+  "pk": 2,
+  "fields": {
+    "producto": 1,
+    "clave": "baseabajo",
+    "nombre": "Base inferior",
+    "orden": 2,
+    "imagen_capa": "",
+    "color_inicial": 1,
+    "admite_estampado": false,
+    "paso": 3,
+    "colores": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "catalogo.parte",
+  "pk": 3,
+  "fields": {
+    "producto": 1,
+    "clave": "basearriba",
+    "nombre": "Base superior",
+    "orden": 3,
+    "imagen_capa": "",
+    "color_inicial": 11,
+    "admite_estampado": false,
+    "paso": 2,
+    "colores": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "catalogo.parte",
+  "pk": 4,
+  "fields": {
+    "producto": 1,
+    "clave": "decorado",
+    "nombre": "Decorado",
+    "orden": 4,
+    "imagen_capa": "",
+    "color_inicial": 12,
+    "admite_estampado": true,
+    "paso": 4,
+    "colores": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "catalogo.parte",
+  "pk": 5,
+  "fields": {
+    "producto": 1,
+    "clave": "tiras",
+    "nombre": "Tiras",
+    "orden": 5,
+    "imagen_capa": "",
+    "color_inicial": 1,
+    "admite_estampado": false,
+    "paso": 5,
+    "colores": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "catalogo.parte",
+  "pk": 6,
+  "fields": {
+    "producto": 1,
+    "clave": "nudo",
+    "nombre": "Nudo",
+    "orden": 6,
+    "imagen_capa": "",
+    "color_inicial": 11,
+    "admite_estampado": false,
+    "paso": 6,
+    "colores": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "catalogo.estampado",
+  "pk": 1,
+  "fields": {
+    "nombre": "Tejido rojo",
+    "clave": "tejido-rojo",
+    "imagen": "",
+    "precio_extra": "25.00",
+    "activo": true,
+    "orden": 0,
+    "productos": [
+      1
+    ]
+  }
+},
+{
+  "model": "catalogo.estampado",
+  "pk": 2,
+  "fields": {
+    "nombre": "Rombos verde",
+    "clave": "rombos-verde",
+    "imagen": "",
+    "precio_extra": "25.00",
+    "activo": true,
+    "orden": 1,
+    "productos": [
+      1
+    ]
+  }
+},
+{
+  "model": "catalogo.combinacion",
+  "pk": 1,
+  "fields": {
+    "producto": 1,
+    "nombre": "Navidad clásica",
+    "estampado": null,
+    "activa": true,
+    "orden": 0
+  }
+},
+{
+  "model": "catalogo.combinacion",
+  "pk": 2,
+  "fields": {
+    "producto": 1,
+    "nombre": "Vino y dorado",
+    "estampado": null,
+    "activa": true,
+    "orden": 1
+  }
+},
+{
+  "model": "catalogo.combinacion",
+  "pk": 3,
+  "fields": {
+    "producto": 1,
+    "nombre": "Pino y nieve",
+    "estampado": null,
+    "activa": true,
+    "orden": 2
+  }
+},
+{
+  "model": "catalogo.combinacion",
+  "pk": 4,
+  "fields": {
+    "producto": 1,
+    "nombre": "Escolar marino",
+    "estampado": null,
+    "activa": true,
+    "orden": 3
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 1,
+  "fields": {
+    "combinacion": 1,
+    "parte": 1,
+    "color": 11
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 2,
+  "fields": {
+    "combinacion": 1,
+    "parte": 3,
+    "color": 11
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 3,
+  "fields": {
+    "combinacion": 1,
+    "parte": 2,
+    "color": 1
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 4,
+  "fields": {
+    "combinacion": 1,
+    "parte": 4,
+    "color": 12
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 5,
+  "fields": {
+    "combinacion": 1,
+    "parte": 5,
+    "color": 1
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 6,
+  "fields": {
+    "combinacion": 1,
+    "parte": 6,
+    "color": 11
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 7,
+  "fields": {
+    "combinacion": 2,
+    "parte": 1,
+    "color": 14
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 8,
+  "fields": {
+    "combinacion": 2,
+    "parte": 3,
+    "color": 15
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 9,
+  "fields": {
+    "combinacion": 2,
+    "parte": 2,
+    "color": 14
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 10,
+  "fields": {
+    "combinacion": 2,
+    "parte": 4,
+    "color": 14
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 11,
+  "fields": {
+    "combinacion": 2,
+    "parte": 5,
+    "color": 15
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 12,
+  "fields": {
+    "combinacion": 2,
+    "parte": 6,
+    "color": 15
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 13,
+  "fields": {
+    "combinacion": 3,
+    "parte": 1,
+    "color": 12
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 14,
+  "fields": {
+    "combinacion": 3,
+    "parte": 3,
+    "color": 1
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 15,
+  "fields": {
+    "combinacion": 3,
+    "parte": 2,
+    "color": 12
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 16,
+  "fields": {
+    "combinacion": 3,
+    "parte": 4,
+    "color": 11
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 17,
+  "fields": {
+    "combinacion": 3,
+    "parte": 5,
+    "color": 1
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 18,
+  "fields": {
+    "combinacion": 3,
+    "parte": 6,
+    "color": 12
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 19,
+  "fields": {
+    "combinacion": 4,
+    "parte": 1,
+    "color": 2
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 20,
+  "fields": {
+    "combinacion": 4,
+    "parte": 3,
+    "color": 1
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 21,
+  "fields": {
+    "combinacion": 4,
+    "parte": 2,
+    "color": 2
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 22,
+  "fields": {
+    "combinacion": 4,
+    "parte": 4,
+    "color": 2
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 23,
+  "fields": {
+    "combinacion": 4,
+    "parte": 5,
+    "color": 1
+  }
+},
+{
+  "model": "catalogo.combinacionparte",
+  "pk": 24,
+  "fields": {
+    "combinacion": 4,
+    "parte": 6,
+    "color": 2
+  }
+},
+{
+  "model": "catalogo.temporada",
+  "pk": 1,
+  "fields": {
+    "nombre": "Navidad 2026",
+    "slug": "navidad-2026",
+    "activa": true,
+    "inicio": null,
+    "fin": null,
+    "aviso": "Esta temporada, el pretexto es Navidad. Envíos a todo México.",
+    "etiqueta": "Temporada navideña",
+    "titulo": "Este año, el pretexto es Navidad.",
+    "descripcion": "Diseña su moño con fotos reales y completa el look con suéter y calcetines a juego.",
+    "imagen": "",
+    "producto_principal": 1,
+    "boton_texto": "Diseñar mi moño",
+    "orden": 0,
+    "productos": [
+      1,
+      14,
+      12,
+      13,
+      10,
+      11,
+      18,
+      17,
+      19
+    ]
+  }
+}
+]
