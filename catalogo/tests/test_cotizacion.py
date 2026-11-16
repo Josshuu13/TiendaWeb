@@ -149,9 +149,9 @@ def test_variante_agotada():
 
 
 def test_no_se_puede_pedir_mas_de_lo_que_hay():
-    v = Variante.objects.filter(producto__slug="calcetines-santa").first()
+    v = Variante.objects.filter(producto__slug="calcetines-santa-claus").first()
     with pytest.raises(ErrorCotizacion, match="Solo quedan"):
-        cotizar({"producto": "calcetines-santa", "variante": v.sku, "cantidad": v.existencias + 1})
+        cotizar({"producto": "calcetines-santa-claus", "variante": v.sku, "cantidad": v.existencias + 1})
 
 
 def test_variante_de_otro_producto_se_rechaza():
@@ -209,7 +209,7 @@ def test_pagina_del_mono_incluye_simulador(client):
     ("catalogo:lista", []),
     ("catalogo:categoria", ["sueteres"]),
     ("catalogo:producto", ["mono-clasico"]),
-    ("catalogo:producto", ["calcetines-rayas"]),
+    ("catalogo:producto", ["calcetines-santa-claus"]),
     ("catalogo:producto", ["kit-reno-rojo"]),
     ("catalogo:categoria", ["kits"]),
     ("catalogo:ayuda", []),
@@ -259,3 +259,16 @@ def test_generar_imagenes_monos(tmp_path):
     from catalogo.management.commands.cargar_datos_demo import DISENOS_LISTOS
     call_command("generar_imagenes_monos", destino=str(tmp_path))
     assert sorted(f.name for f in tmp_path.iterdir()) == sorted(f"{d[0]}.webp" for d in DISENOS_LISTOS)
+
+
+# --- Calcetines (los que se dieron de alta en el admin, ahora fijos en la demo) ---
+
+def test_calcetines_con_foto_precio_tachado_y_unitalla():
+    from catalogo.management.commands.cargar_datos_demo import CALCETINES, CALCETINES_RETIRADOS
+    for slug, _nombre, precio, anterior, color, *_ in CALCETINES:
+        p = Producto.objects.get(slug=slug)
+        assert p.activo and p.url_imagen_estatica          # foto en static/img/calcetines
+        assert (p.precio_base, p.precio_anterior) == (Decimal(precio), Decimal(anterior))
+        v = p.variantes.get()
+        assert (v.talla, v.color.nombre) == ("UNI", color)
+    assert not Producto.objects.filter(slug__in=CALCETINES_RETIRADOS, activo=True).exists()

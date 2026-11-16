@@ -170,6 +170,52 @@ ESTAMPADOS = [
     ("Rombos verde", "rombos-verde", "25.00"),
 ]
 
+# ---------------------------------------------------------------------------
+# Calcetines (los dio de alta Kevin en el admin el 08/11/2026; aquí quedan fijos
+# para que salgan igual en todas las computadoras, en las pruebas y en Render).
+# Cada uno es unitalla y de un color. Su foto: static/img/calcetines/<slug>.webp
+# ---------------------------------------------------------------------------
+DESCRIPCION_CALCETINES_AFELPADOS = """¡Llegó la Navidad a tus Pies! 🎄🧦
+Abriga tus días festivos con nuestras calcetas navideñas afelpadas. Diseñadas con interiores \
+ultrasuaves y térmicos que mantendrán tus pies calientitos y cómodos durante toda la temporada.
+
+Súper suaves y afelpadas: Tejido exterior de alta calidad con forro interno térmico tipo peluche.
+
+Diseño Unisex y Unitalla: Ajuste cómodo y elástico perfecto tanto para hombres como para mujeres."""
+
+DESCRIPCION_CALCETINES_ALGODON = """¡Llegó la Navidad a tus Pies! 🎄🧦
+Abriga tus días festivos con nuestras calcetas navideñas de algodón. Diseñadas con fibras \
+naturales de alta calidad y un interior ultrasuave que mantendrá tus pies calientes, frescos y \
+cómodos durante toda la temporada.
+
+Algodón Premium: Exterior de algodón transpirable y resistente para máxima comodidad.
+
+Diseño Unisex y Unitalla: Ajuste cómodo, elástico y adaptable, perfecto tanto para hombres como para mujeres."""
+
+AFELPADOS, ALGODON = DESCRIPCION_CALCETINES_AFELPADOS, DESCRIPCION_CALCETINES_ALGODON
+
+# (slug, nombre, precio, precio anterior, color, existencias, días de elaboración, destacado, descripción)
+CALCETINES = [
+    ("calcetines-santa-claus", "Calcetines Santa Claus",
+     "110.00", "130.00", "Rojo navidad", 10, 5, True, AFELPADOS),
+    ("calcetines-muneco-de-nieve", "Calcetines Muñeco de Nieve",
+     "90.00", "110.00", "Verde navidad", 4, 5, False, AFELPADOS),
+    ("calcetines-renos-de-santa", "Calcetines Renos de Santa",
+     "90.00", "110.00", "Rojo navidad", 20, 5, False, AFELPADOS),
+    ("calcetines-rodolfo-el-reno", "Calcetines Rodolfo el Reno",
+     "110.00", "130.00", "Blanco", 20, 5, True, AFELPADOS),
+    ("calcetines-hombre-de-galleta", "Calcetines Hombre de Galleta",
+     "90.00", "110.00", "Rojo navidad", 30, 5, False, AFELPADOS),
+    ("calcetines-muneco-de-nieve-completo", "Calcetines Muñeco de Nieve Completo",
+     "110.00", "130.00", "Blanco", 10, 5, True, AFELPADOS),
+    ("calcetines-renos-de-santa-algodon-crema", "Calcetines Renos de Santa algodón crema",
+     "60.00", "75.00", "Crema", 20, 3, True, ALGODON),
+    ("calcetines-renos-de-santa-algodon-negros", "Calcetines Renos de Santa algodón negros",
+     "60.00", "75.00", "Negro", 15, 3, True, ALGODON),
+]
+# Calcetines de ejemplo de la primera versión: dejan de mostrarse.
+CALCETINES_RETIRADOS = ["calcetines-rayas", "calcetines-santa"]
+
 TALLAS_NINA = ["2-4", "6-8", "10-12"]
 TALLAS_ADULTO = ["CH", "M", "G"]
 
@@ -284,18 +330,23 @@ class Command(BaseCommand):
                 extra = "40.00" if t == "G" else "0"  # la talla G cuesta $40 más
                 self._variante(p, t, colores[color], 4, extra)
 
-        # --- Calcetines ---
-        for slug, nombre, precio, color, desc in [
-            ("calcetines-rayas", "Calcetines Rayas navideñas", "95.00", "Verde pino",
-             "Calcetines a rayas, cómodos para toda la temporada."),
-            ("calcetines-santa", "Calcetines Santa", "110.00", "Rojo navidad",
-             "Calcetines con Santa y cascabel."),
-        ]:
-            p = self._producto(slug, cats["calcetines"], nombre, precio, 0, desc,
-                               destacado=slug == "calcetines-santa")
-            p.variantes.exclude(color=colores[color]).delete()
-            for t in TALLAS_NINA + ["UNI"]:
-                self._variante(p, t, colores[color], 10)
+        # --- Calcetines (ver CALCETINES arriba) ---
+        Producto.objects.filter(slug__in=CALCETINES_RETIRADOS).update(activo=False, destacado=False)
+        for slug, nombre, precio, anterior, color, existencias, dias, destacado, desc in CALCETINES:
+            p = self._producto(slug, cats["calcetines"], nombre, precio, dias, desc, destacado=destacado)
+            p.precio_anterior = Decimal(anterior)   # precio tachado y etiqueta "Ahorra $..."
+            # La foto sale de static/img/calcetines/<slug>.webp. Se quita la que se haya
+            # subido en el admin (media/), porque esa no se publica en Render.
+            p.imagen = ""
+            p.save(update_fields=["precio_anterior", "imagen"])
+            # Unitalla y un solo color. El SKU lleva el slug completo (sin "calcetines-")
+            # para que no choque con el de los calcetines de ejemplo anteriores.
+            p.variantes.exclude(talla="UNI", color=colores[color]).delete()
+            Variante.objects.update_or_create(
+                producto=p, talla="UNI", color=colores[color],
+                defaults={"sku": f"CAL-{slug.removeprefix('calcetines-').upper()}"[:40],
+                          "existencias": existencias, "precio_extra": Decimal("0")},
+            )
 
         # --- Kits navideños (se venden como un producto con precio de paquete) ---
         for slug, nombre, precio, anterior, color, desc in KITS:

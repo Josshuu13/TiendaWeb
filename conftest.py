@@ -51,8 +51,8 @@ def seleccion_sueter(slug="sueter-santa", talla="M", cantidad=1):
 
 
 def seleccion_calcetin(cantidad=1):
-    return {"producto": "calcetines-santa",
-            "variante": Variante.objects.filter(producto__slug="calcetines-santa").first().sku,
+    return {"producto": "calcetines-santa-claus",
+            "variante": Variante.objects.filter(producto__slug="calcetines-santa-claus").first().sku,
             "cantidad": cantidad}
 
 

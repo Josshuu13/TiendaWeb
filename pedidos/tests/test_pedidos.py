@@ -90,9 +90,9 @@ def test_pedido_mixto_con_las_tres_lineas_toma_el_mas_tardado(cliente, settings)
     pedido = comprar(cliente, seleccion_mono(), seleccion_sueter(), seleccion_calcetin())
     assert pedido.lineas.count() == 3
     resumen_dias = max(linea.producto.dias_elaboracion for linea in pedido.lineas.all())
-    assert resumen_dias == 3
+    assert resumen_dias == 5   # los calcetines tardan 5 días, más que el moño (3)
     from catalogo.entregas import rango_entrega
-    assert (pedido.entrega_minima, pedido.entrega_maxima) == rango_entrega(3)
+    assert (pedido.entrega_minima, pedido.entrega_maxima) == rango_entrega(5)
 
 
 def test_la_personalizacion_se_conserva_aunque_cambie_el_catalogo(cliente):
