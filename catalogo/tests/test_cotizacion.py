@@ -222,8 +222,8 @@ def test_paginas_cargan(client, nombre, args):
 # --- Diseños listos para usar (moños de uniforme) ---
 
 def test_disenos_listos_se_venden_sin_selector_de_color():
-    from catalogo.management.commands.cargar_datos_demo import DISENOS_LISTOS
-    for slug, _nombre, _partes in DISENOS_LISTOS:
+    from catalogo.management.commands.cargar_datos_demo import TODOS_LOS_DISENOS
+    for slug, _nombre, _partes, _estampado, _coleccion in TODOS_LOS_DISENOS:
         p = Producto.objects.get(slug=slug)
         assert p.activo and not p.personalizable
         assert p.url_imagen_estatica                  # su imagen existe en static/img/monos
@@ -247,19 +247,62 @@ def test_cotizar_diseno_listo():
 
 def test_pagina_de_monos_tiene_disena_el_tuyo_y_disenos_listos(client):
     html = client.get(reverse("catalogo:categoria", args=["monos"])).content.decode()
-    assert "¿Buscas un color en especial?" in html and "Diseños listos para usar." in html
+    assert "¿Buscas un color en especial?" in html and "Uniforme escolar." in html
     assert "Personalizar" in html
     assert "filtro-color" not in html                  # sin filtro de color en Moños
     # El personalizable sale una sola vez (en "Diseña el tuyo"), no también como tarjeta.
     assert html.count('href="/producto/mono-clasico/" class="prod"') == 0
-    # Los diseños salen en el orden de DISENOS_LISTOS.
+    # Dentro de su sección, los diseños salen en el orden de DISENOS_LISTOS.
     assert html.index("Moño azul marino clásico") < html.index("Moño rojo, blanco y azul marino")
 
 
 def test_generar_imagenes_monos(tmp_path):
-    from catalogo.management.commands.cargar_datos_demo import DISENOS_LISTOS
+    from catalogo.management.commands.cargar_datos_demo import TODOS_LOS_DISENOS
     call_command("generar_imagenes_monos", destino=str(tmp_path))
-    assert sorted(f.name for f in tmp_path.iterdir()) == sorted(f"{d[0]}.webp" for d in DISENOS_LISTOS)
+    assert sorted(f.name for f in tmp_path.iterdir()) == sorted(f"{d[0]}.webp" for d in TODOS_LOS_DISENOS)
+
+
+# --- Secciones de Moños: Navideños, Uniforme escolar y Con decorado ---
+
+def test_cada_mono_listo_esta_en_su_coleccion():
+    from catalogo.management.commands.cargar_datos_demo import (
+        DISENOS_CON_DECORADO, DISENOS_LISTOS, DISENOS_NAVIDENOS,
+    )
+    esperado = {Producto.NAVIDENO: DISENOS_NAVIDENOS, Producto.UNIFORME: DISENOS_LISTOS,
+                Producto.DECORADO: DISENOS_CON_DECORADO}
+    for coleccion, disenos in esperado.items():
+        slugs = set(Producto.objects.filter(coleccion=coleccion).values_list("slug", flat=True))
+        assert slugs == {d[0] for d in disenos}
+    assert (len(DISENOS_NAVIDENOS), len(DISENOS_CON_DECORADO)) == (4, 8)
+
+
+def test_disenos_con_estampado_usan_estampados_y_colores_existentes():
+    from catalogo.management.commands.cargar_datos_demo import COLORES, ESTAMPADOS, TODOS_LOS_DISENOS
+    colores = {c[0] for c in COLORES}
+    claves = {e[1] for e in ESTAMPADOS}
+    for slug, _nombre, partes, estampado, _coleccion in TODOS_LOS_DISENOS:
+        assert estampado is None or estampado in claves, slug
+        for parte, color in partes.items():
+            # El decorado estampado no lleva color; todas las demás partes sí.
+            assert (color is None) == (parte == "decorado" and estampado is not None), slug
+            assert color is None or color in colores, (slug, color)
+
+
+def test_pagina_de_monos_tiene_categorias_y_secciones_en_orden(client):
+    html = client.get(reverse("catalogo:categoria", args=["monos"])).content.decode()
+    assert "Categorías:" in html
+    for ancla in ["#disena", "#navideno", "#uniforme", "#decorado"]:
+        assert f'href="{ancla}"' in html
+    # Navideños primero (temporada), luego uniforme y al final con decorado.
+    assert html.index('id="navideno"') < html.index('id="uniforme"') < html.index('id="decorado"')
+    assert html.index("Moño plata navideño") < html.index('id="uniforme"')
+    assert html.index('id="decorado"') < html.index("Moño rombos pastel")
+    assert "js/atajos.js" in html
+
+
+def test_otras_categorias_no_muestran_barra_de_categorias(client):
+    html = client.get(reverse("catalogo:categoria", args=["calcetines"])).content.decode()
+    assert "Categorías:" not in html and "js/atajos.js" not in html
 
 
 # --- Calcetines (los que se dieron de alta en el admin, ahora fijos en la demo) ---

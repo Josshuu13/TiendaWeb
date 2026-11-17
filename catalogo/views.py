@@ -105,7 +105,7 @@ def lista(request, slug=None):
     if personalizable:
         filtros_color = []
         # Los diseños listos salen en el orden en que se dieron de alta
-        # (el mismo orden que DISENOS_LISTOS en cargar_datos_demo.py).
+        # (el mismo orden que en cargar_datos_demo.py).
         productos = productos.exclude(pk=personalizable.pk).order_by("creado", "pk")
         # Colores que se pueden elegir en el simulador (para los puntitos y el conteo).
         colores_simulador = list(
@@ -136,6 +136,7 @@ def lista(request, slug=None):
         "color_sel": color_sel,
         "personalizable": personalizable,
         "colores_simulador": colores_simulador,
+        "secciones": _secciones(productos) if personalizable else [],
     })
 
 
@@ -146,6 +147,30 @@ def temporada(request, slug):
         "coleccion": coleccion,
         "productos": _productos_activos().filter(temporadas=coleccion),
     })
+
+
+# Texto y emoji de cada sección de la página de Moños.
+SECCIONES = {
+    Producto.NAVIDENO: ("🎄", "Navideños.", "Para regalar y lucir en las posadas."),
+    Producto.UNIFORME: ("🎒", "Uniforme escolar.", "Los colores de cada escuela, listos para enviar."),
+    Producto.DECORADO: ("🎀", "Con decorado.", "Listones estampados, ya combinados."),
+    "": ("✨", "Más moños.", "Listos para enviar."),
+}
+
+
+def _secciones(productos):
+    """Agrupa los moños listos por colección, en el orden de Producto.COLECCIONES
+    (Navideños, Uniforme escolar, Con decorado). Solo incluye secciones con productos."""
+    secciones = []
+    for clave in [c for c, _ in Producto.COLECCIONES] + [""]:
+        de_seccion = [p for p in productos if p.coleccion == clave]
+        if de_seccion:
+            emoji, titulo, subtitulo = SECCIONES[clave]
+            secciones.append({
+                "id": clave or "otros", "emoji": emoji, "titulo": titulo,
+                "nombre": titulo.rstrip("."), "subtitulo": subtitulo, "productos": de_seccion,
+            })
+    return secciones
 
 
 def ayuda(request):

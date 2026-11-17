@@ -3,3 +3,5 @@
 pytest>=8.0
 pytest-django>=4.8
 ruff>=0.8
+# Para generar las imágenes de los moños listos (python manage.py generar_imagenes_monos).
+numpy>=2.0

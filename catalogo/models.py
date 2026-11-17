@@ -109,6 +109,13 @@ class Producto(models.Model):
         help_text="Si está marcado, se vende desde el simulador (sin variantes).",
     )
     imagen = models.ImageField(upload_to="productos/", blank=True)
+    # Sección de la página de su categoría. Hoy solo la usan los moños listos para usar.
+    NAVIDENO, UNIFORME, DECORADO = "navideno", "uniforme", "decorado"
+    COLECCIONES = [(NAVIDENO, "Navideños"), (UNIFORME, "Uniforme escolar"), (DECORADO, "Con decorado")]
+    coleccion = models.CharField(
+        "colección", max_length=10, choices=COLECCIONES, blank=True,
+        help_text="Sección donde aparece en la página de Moños. Vacío: sin sección.",
+    )
     activo = models.BooleanField(default=True)
     destacado = models.BooleanField(default=False)  # aparece en la portada
     creado = models.DateTimeField(auto_now_add=True)

@@ -245,6 +245,31 @@ s { color: var(--suave); }
 
 /* ===== Filtros ===== */
 .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px 24px; }
+/* Moños: barra "Categorías:" con atajos a cada sección. Se queda pegada arriba,
+   debajo del menú, mientras se baja por la página. */
+.atajos {
+  position: sticky; top: var(--barra); z-index: 20; display: flex; align-items: center; gap: 8px;
+  margin: 6px -4px 18px; padding: 10px 4px; overflow-x: auto; scrollbar-width: none;
+  background: rgba(245, 245, 247, .92); backdrop-filter: blur(8px);
+}
+.atajos::-webkit-scrollbar { display: none; }
+.atajos-titulo { flex: none; margin-right: 2px; color: var(--suave); font-size: 14px; font-weight: 600; }
+.atajos a {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;
+  border: 1px solid var(--linea); border-radius: 999px; background: #fff; color: var(--tinta);
+  font-size: 14px; font-weight: 500; box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+.atajos a:hover { text-decoration: none; border-color: var(--suave); }
+.atajos a small { padding: 1px 7px; border-radius: 999px; background: var(--gris); color: var(--suave); font-size: 11px; }
+.atajos a.activa { border-color: var(--tinta); background: var(--tinta); color: #fff; }
+.atajos a.activa small { background: rgba(255, 255, 255, .2); color: #fff; }
+section.seccion[id] { scroll-margin-top: 130px; }   /* que el título no quede tapado por la barra */
+@media (max-width: 600px) {
+  .atajos { margin-inline: -16px; padding-inline: 16px; }
+  .atajos a { padding: 8px 13px; font-size: 13px; }
+  .atajos a small { display: none; }
+}
+
 /* Moños: sección "Diseña el tuyo" (texto a la izquierda, moño y botón a la derecha) */
 .disena {
   display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 32px; padding: 40px 56px;
