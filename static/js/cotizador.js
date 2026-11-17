@@ -111,13 +111,12 @@
       const colores = form.querySelector(`[name="${clave}"]`)?.closest("[data-colores-estampable]");
 
       // El decorado con estampado muestra el nombre del estampado en lugar del color.
+      // (decorado.js oculta la paleta lisa mientras hay estampado).
       if (hayEstampado && colores) {
-        el.textContent = form.querySelector(`label[for="${estampado.id}"]`).title;
-        if (punto) punto.style.background = `center / cover url("${form.querySelector(`label[for="${estampado.id}"] img`).src}")`;
-        colores.classList.add("atenuado");
+        el.textContent = estampado.dataset.nombre;
+        if (punto) punto.style.background = `center / cover url("${estampado.dataset.img}")`;
         return;
       }
-      if (colores) colores.classList.remove("atenuado");
 
       const radio = form.querySelector(`input[name="${clave}"]:checked`);
       if (!radio) { el.textContent = ""; return; }

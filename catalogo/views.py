@@ -26,7 +26,7 @@ from django.views.decorators.http import require_POST
 
 from .cotizacion import ErrorCotizacion, cotizar
 from .entregas import texto_entrega
-from .models import Categoria, Color, Producto, Temporada, Variante
+from .models import Categoria, Color, Estampado, Producto, Temporada, Variante
 
 
 def _productos_activos():
@@ -218,6 +218,28 @@ def _agrupar_colores(colores):
     return grupos
 
 
+def _agrupar_estampados(estampados):
+    """Estampados agrupados para la página: grupo (Escolares, Navideños, Otros) ->
+    diseño (Mariposas, Lunares...) -> sus variantes de color, en el orden del admin.
+
+    Devuelve [{"nombre": "Escolares", "disenos": [{"nombre", "slug", "variantes"}, ...]}, ...]
+    """
+    grupos = []
+    for clave, nombre in Estampado.GRUPOS:
+        disenos = {}   # nombre del diseño -> lista de variantes (conserva el orden)
+        for e in estampados:
+            if e.grupo == clave:
+                disenos.setdefault(e.nombre_diseno, []).append(e)
+        if disenos:
+            grupos.append({
+                "nombre": nombre,
+                "disenos": [
+                    {"nombre": n, "slug": slugify(n), "variantes": v} for n, v in disenos.items()
+                ],
+            })
+    return grupos
+
+
 def _para_combinar(producto, cuantos=4):
     """'Combínalo con…': un producto destacado de cada una de las otras categorías
     y, si sobra lugar, más productos."""
@@ -273,6 +295,9 @@ def detalle(request, slug):
         ]
         contexto["total_pasos"] = len(por_paso)
         contexto["estampados"] = estampados
+        contexto["grupos_estampados"] = _agrupar_estampados(estampados)
+        # Precio que se muestra junto a "Estampado": el más bajo (hoy todos cuestan igual).
+        contexto["precio_estampado"] = min((e.precio_extra for e in estampados), default=0)
         contexto["combinaciones"] = [
             {"nombre": c.nombre,
              "puntos": [cp.color.codigo_hex for cp in sorted(c.colores.all(), key=lambda x: x.parte.paso)]}

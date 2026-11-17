@@ -134,17 +134,51 @@
                 <span class="nota" data-nombre-color="{{ parte.clave }}"></span></h2>
 
               {% if parte.admite_estampado and estampados %}
-                <!-- El decorado puede ser liso (con color) o un listón estampado -->
+                <!-- El decorado puede ser liso (con color) o un listón estampado.
+                     decorado.js muestra los diseños, marca el elegido y abre sus colores. -->
                 <div class="grupo-colores">Tipo de decorado</div>
-                <div class="fila">
+                <div class="segmento" data-tipo-decorado>
                   <input type="radio" class="btn-check" name="estampado" value="" id="est-liso" checked>
-                  <label class="opcion-liso" for="est-liso">Liso</label>
-                  {% for e in estampados %}
-                    <input type="radio" class="btn-check" name="estampado" value="{{ e.clave }}" id="est-{{ e.clave }}">
-                    <label class="opcion-estampado" for="est-{{ e.clave }}" title="{{ e.nombre }}">
-                      <img src="{{ e.url_imagen }}" alt="" loading="lazy">
-                      <span>{{ e.nombre }}{% if e.precio_extra %} +${{ e.precio_extra|floatformat:0 }}{% endif %}</span>
-                    </label>
+                  <label class="segmento-opcion" for="est-liso">Liso</label>
+                  <button type="button" class="segmento-opcion" data-ver-estampados aria-expanded="false">
+                    Estampado{% if precio_estampado %} <small>+${{ precio_estampado|floatformat:0 }}</small>{% endif %}
+                  </button>
+                </div>
+
+                <div class="estampados" data-estampados hidden>
+                  {% for grupo in grupos_estampados %}
+                    <div class="grupo-colores">{{ grupo.nombre }}</div>
+                    <!-- Una punta de listón por diseño; al tocarla se elige su primer color -->
+                    <div class="disenos">
+                      {% for d in grupo.disenos %}
+                        {% with primera=d.variantes.0 %}
+                        <label class="diseno" for="est-{{ primera.clave }}" data-diseno="{{ d.slug }}" title="{{ d.nombre }}">
+                          <img src="{{ primera.url_imagen }}" alt="" loading="lazy" data-portada>
+                          <span>{{ d.nombre }}</span>
+                          <em>{% if d.variantes|length > 1 %}{{ d.variantes|length }} colores{% endif %}</em>
+                        </label>
+                        {% endwith %}
+                      {% endfor %}
+                    </div>
+                    <!-- Colores de cada diseño (solo se ve el del diseño elegido) -->
+                    {% for d in grupo.disenos %}
+                      <div class="colores-diseno" data-colores-de="{{ d.slug }}" hidden>
+                        {% if d.variantes|length > 1 %}
+                          <div class="colores-diseno-titulo">{{ d.nombre }}: <b data-color-elegido></b></div>
+                        {% endif %}
+                        <div class="fila">
+                          {% for e in d.variantes %}
+                            <input type="radio" class="btn-check" name="estampado" value="{{ e.clave }}" id="est-{{ e.clave }}"
+                                   data-diseno="{{ d.slug }}" data-nombre="{{ e.nombre }}" data-color="{{ e.color_nombre }}"
+                                   data-img="{{ e.url_imagen }}">
+                            {% if d.variantes|length > 1 %}
+                              <label class="muestra" for="est-{{ e.clave }}" title="{{ e.color_nombre }}"
+                                     style="--c: {{ e.color_hex|default:'#ccc' }}"><span class="visually-hidden">{{ e.color_nombre }}</span></label>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
                   {% endfor %}
                 </div>
               {% endif %}
@@ -267,6 +301,7 @@
   <script src="{% static 'js/simulador.js' %}?v={{ version_estaticos }}"></script>
   <!-- Pasos, "Lo más vendido" y "Restablecer" -->
   <script src="{% static 'js/personalizador.js' %}?v={{ version_estaticos }}"></script>
+  <script src="{% static 'js/decorado.js' %}?v={{ version_estaticos }}"></script>
 {% endif %}
 {% if not producto.personalizable %}
   <!-- Botones de color y talla de los productos de catálogo -->

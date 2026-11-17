@@ -164,10 +164,97 @@ DISENOS_LISTOS = [
       "baseabajo": "Blanco", "tiras": "Blanco", "decorado": "Azul marino"}),
 ]
 
-# Listones estampados de ejemplo (sus imágenes están en static/simulador/estampados/).
+# ---------------------------------------------------------------------------
+# Listones estampados para el decorado (fotos en static/simulador/estampados/<clave>.jpg).
+# Cada diseño puede venir en varios colores; en la página se muestra una punta de
+# listón por diseño y, al elegirla, sus colores. Para agregar un color a un diseño
+# basta con un renglón aquí y la foto del listón.
+# (diseño, grupo, [(color, clave, código del circulito), ...])
+# Si el diseño tiene un solo color, el color y el código van vacíos.
+# ---------------------------------------------------------------------------
+PRECIO_ESTAMPADO = "15.00"   # precio provisional, igual para todos los estampados
+
+DISENOS_ESTAMPADOS = [
+    # Escolares
+    ("Útiles escolares", Estampado.ESCOLAR, [
+        ("Gris", "utiles-gris", "#5E6268"), ("Azul marino", "utiles-azul-marino", "#1C2541"),
+        ("Guinda", "utiles-guinda", "#6E1428"), ("Verde botella", "utiles-verde-botella", "#0F4D32"),
+        ("Rojo", "utiles-rojo", "#B3122E"), ("Negro", "utiles-negro", "#1A1A1A"),
+    ]),
+    ("Rejilla", Estampado.ESCOLAR, [
+        ("Gris", "rejilla-gris", "#5E6268"), ("Azul marino", "rejilla-azul-marino", "#1C2541"),
+        ("Guinda", "rejilla-guinda", "#6E1428"), ("Verde botella", "rejilla-verde-botella", "#0F4D32"),
+        ("Rojo", "rejilla-rojo", "#B3122E"), ("Negro", "rejilla-negro", "#1A1A1A"),
+    ]),
+    ("Rombos", Estampado.ESCOLAR, [
+        ("Gris", "rombos-gris", "#5E6268"), ("Azul marino", "rombos-azul-marino", "#1C2541"),
+        ("Guinda", "rombos-guinda", "#6E1428"), ("Verde botella", "rombos-verde-botella", "#0F4D32"),
+        ("Rosa", "rombos-rosa", "#F4A3B6"), ("Negro", "rombos-negro", "#1A1A1A"),
+    ]),
+    ("Puntos", Estampado.ESCOLAR, [
+        ("Azul marino", "puntos-azul-marino", "#1C2541"), ("Guinda", "puntos-guinda", "#6E1428"),
+        ("Verde botella", "puntos-verde-botella", "#0F4D32"), ("Gris", "puntos-gris", "#5E6268"),
+        ("Negro", "puntos-negro", "#1A1A1A"), ("Rojo", "puntos-rojo", "#B3122E"),
+    ]),
+    ("Cuadros con fresas", Estampado.ESCOLAR, [
+        ("Turquesa", "cuadros-turquesa", "#2BB3B1"), ("Rosa", "cuadros-rosa", "#F4A3B6"),
+        ("Lila", "cuadros-lila", "#A98BD3"), ("Azul rey", "cuadros-azul-rey", "#1F4FB4"),
+        ("Verde", "cuadros-verde", "#2E8B3E"),
+    ]),
+    ("Calado", Estampado.ESCOLAR, [
+        ("Rojo", "calado-rojo", "#B3122E"), ("Azul marino", "calado-azul-marino", "#1C2541"),
+        ("Guinda", "calado-guinda", "#6E1428"), ("Verde botella", "calado-verde-botella", "#0F4D32"),
+        ("Rosa", "calado-rosa", "#F4A3B6"), ("Blanco", "calado-blanco", "#EDEDEA"),
+    ]),
+    # Navideños
+    ("Muñecos de nieve", Estampado.NAVIDENO, [
+        ("Azul marino", "nieve-azul-marino", "#1C2541"), ("Rojo", "nieve-rojo", "#B3122E"),
+        ("Verde pino", "nieve-verde-pino", "#1F5E3A"), ("Vino", "nieve-vino", "#6B1E2E"),
+        ("Gris", "nieve-gris", "#5E6268"), ("Negro", "nieve-negro", "#1A1A1A"),
+    ]),
+    ("Muñecos de nieve café", Estampado.NAVIDENO, [("", "nieve-cafe", "")]),
+    ("Metálico", Estampado.NAVIDENO, [
+        ("Plateado", "metalico-plateado", "#C9CCD1"), ("Dorado", "metalico-dorado", "#D4AF37"),
+        ("Cobre", "metalico-cobre", "#B87333"), ("Rosa metalico", "metalico-rosa-metalico", "#E3A1B6"),
+    ]),
+    ("Organza con rayas", Estampado.NAVIDENO, [
+        ("Negro", "rayas-negro", "#1A1A1A"), ("Azul marino", "rayas-azul-marino", "#1C2541"),
+        ("Rojo", "rayas-rojo", "#B3122E"), ("Verde pino", "rayas-verde-pino", "#1F5E3A"),
+        ("Morado", "rayas-morado", "#5B2C83"), ("Guinda", "rayas-guinda", "#6E1428"),
+    ]),
+    ("Tejido rojo", Estampado.NAVIDENO, [("", "tejido-rojo", "")]),
+    ("Rombos verde", Estampado.NAVIDENO, [("", "rombos-verde", "")]),
+    # Otros
+    ("Mariposas", Estampado.OTRO, [
+        ("Rojo", "mariposas-rojo", "#B3122E"), ("Azul marino", "mariposas-azul-marino", "#1C2541"),
+        ("Rosa", "mariposas-rosa", "#E58FA8"), ("Lila", "mariposas-lila", "#9C7CC9"),
+        ("Verde", "mariposas-verde", "#1F5E3A"), ("Turquesa", "mariposas-turquesa", "#1E9E9C"),
+        ("Negro", "mariposas-negro", "#1A1A1A"), ("Dorado", "mariposas-dorado", "#B8902A"),
+    ]),
+    ("Lunares", Estampado.OTRO, [
+        ("Rojo", "lunares-rojo", "#B3122E"), ("Azul marino", "lunares-azul-marino", "#1C2541"),
+        ("Rosa mexicano", "lunares-rosa-mexicano", "#E4007C"), ("Verde", "lunares-verde", "#2E8B3E"),
+        ("Negro", "lunares-negro", "#1A1A1A"), ("Celeste", "lunares-celeste", "#8EC1E6"),
+    ]),
+    ("Tul brillante", Estampado.OTRO, [
+        ("Celeste", "tul-celeste", "#8EC1E6"), ("Rosa", "tul-rosa", "#F4A3B6"),
+        ("Lila", "tul-lila", "#A98BD3"), ("Blanco", "tul-blanco", "#EDEDEA"),
+        ("Menta", "tul-menta", "#8FD9C0"), ("Rojo", "tul-rojo", "#B3122E"),
+    ]),
+    ("Degradado con brillo", Estampado.OTRO, [
+        ("Rosa", "rosa-brillo-rosa", "#F4A3B6"), ("Celeste", "rosa-brillo-celeste", "#8EC1E6"),
+        ("Lila", "rosa-brillo-lila", "#A98BD3"), ("Rojo", "rosa-brillo-rojo", "#B3122E"),
+        ("Menta", "rosa-brillo-menta", "#8FD9C0"), ("Azul rey", "rosa-brillo-azul-rey", "#1F4FB4"),
+    ]),
+    ("Unicornios", Estampado.OTRO, [("", "unicornios", "")]),
+    ("Catarinas", Estampado.OTRO, [("", "catarinas", "")]),
+]
+
+# Lista plana (nombre completo, clave, precio), útil para recorrer todos los estampados.
 ESTAMPADOS = [
-    ("Tejido rojo", "tejido-rojo", "25.00"),
-    ("Rombos verde", "rombos-verde", "25.00"),
+    (f"{diseno} {color.lower()}" if color else diseno, clave, PRECIO_ESTAMPADO)
+    for diseno, _grupo, variantes in DISENOS_ESTAMPADOS
+    for color, clave, _hex in variantes
 ]
 
 # ---------------------------------------------------------------------------
@@ -275,12 +362,23 @@ class Command(BaseCommand):
             parte.colores.set(todos)  # todas las partes aceptan toda la paleta
             partes[clave] = parte
 
-        for i, (nombre, clave, precio) in enumerate(ESTAMPADOS):
-            est, _ = Estampado.objects.update_or_create(
-                clave=clave,
-                defaults={"nombre": nombre, "precio_extra": Decimal(precio), "orden": i},
-            )
-            est.productos.add(clasico)
+        # --- Estampados (ver DISENOS_ESTAMPADOS) ---
+        orden = 0
+        for diseno, grupo, variantes in DISENOS_ESTAMPADOS:
+            for color, clave, codigo in variantes:
+                est, _ = Estampado.objects.update_or_create(
+                    clave=clave,
+                    defaults={
+                        "nombre": f"{diseno} {color.lower()}" if color else diseno,
+                        "diseno": diseno, "grupo": grupo,
+                        "color_nombre": color, "color_hex": codigo,
+                        "precio_extra": Decimal(PRECIO_ESTAMPADO), "orden": orden, "activo": True,
+                    },
+                )
+                est.productos.add(clasico)
+                orden += 1
+        # Los estampados que ya no están en la lista dejan de mostrarse.
+        Estampado.objects.exclude(clave__in=[e[1] for e in ESTAMPADOS]).update(activo=False)
 
         # --- Combinaciones de "Lo más vendido" ---
         for i, (nombre, por_parte, clave_est) in enumerate(COMBINACIONES):

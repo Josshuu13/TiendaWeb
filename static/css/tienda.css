@@ -419,6 +419,34 @@ s { color: var(--suave); }
 .opcion-estampado img { width: 18px; height: 34px; border-radius: 2px; object-fit: cover; }
 .btn-check:checked + .opcion-estampado, .btn-check:checked + .opcion-liso { border-color: var(--acento); box-shadow: inset 0 0 0 1px var(--acento); }
 
+/* Decorado: "Liso" / "Estampado" como interruptor */
+.segmento { display: inline-flex; gap: 2px; margin-bottom: 4px; padding: 3px; border-radius: 999px; background: var(--gris); }
+.segmento-opcion {
+  min-height: 38px; padding: 8px 18px; border: 0; border-radius: 999px;
+  background: none; color: var(--suave); font: inherit; font-size: 14px; cursor: pointer;
+}
+.segmento-opcion.activa { background: #fff; color: var(--tinta); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.segmento-opcion small { color: var(--acento); font-weight: 600; }
+.btn-check:focus-visible + .segmento-opcion { outline: 2px solid #0071e3; outline-offset: 2px; }
+
+/* Diseños estampados: cada uno es la punta de un listón con corte en V */
+.disenos { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+.diseno {
+  display: grid; justify-items: center; align-content: start; gap: 3px; padding: 8px 4px 6px;
+  border-radius: 14px; font-size: 12px; line-height: 1.2; text-align: center; cursor: pointer;
+}
+.diseno img {
+  width: 46px; height: 82px; object-fit: cover; object-position: top;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);   /* corte en V */
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+}
+.diseno em { min-height: 1em; color: var(--suave); font-size: 11px; font-style: normal; }
+.diseno:hover { background: var(--superficie-2, #f5f5f7); }
+.diseno.sel { background: #fbe9ec; box-shadow: inset 0 0 0 1.5px var(--acento); }
+/* Colores del diseño elegido */
+.colores-diseno { margin-top: 10px; padding: 12px; border-radius: var(--radio-m); background: #fbe9ec; }
+.colores-diseno-titulo { margin-bottom: 8px; font-size: 14px; }
+
 /* ===== Carrito y compra ===== */
 .compra-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; padding-bottom: 24px; }
 .linea { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding-block: 20px; border-bottom: 1px solid var(--gris); }
