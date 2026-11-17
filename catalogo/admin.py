@@ -91,8 +91,10 @@ class VarianteAdmin(admin.ModelAdmin):
 
 @admin.register(Estampado)
 class EstampadoAdmin(admin.ModelAdmin):
-    list_display = ["vista", "nombre", "precio_extra", "activo", "orden"]
+    list_display = ["vista", "nombre", "diseno", "color_nombre", "grupo", "precio_extra", "activo", "orden"]
     list_display_links = ["nombre"]
+    list_filter = ["grupo", "activo", "diseno"]
+    search_fields = ["nombre", "diseno", "clave"]
     list_editable = ["precio_extra", "activo", "orden"]
     prepopulated_fields = {"clave": ["nombre"]}
     filter_horizontal = ["productos"]

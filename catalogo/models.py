@@ -305,15 +305,36 @@ class Estampado(models.Model):
     La imagen es una foto del listón, recto y vertical, recortada justo a su ancho
     (sin mesa ni fondo). El simulador la repite a lo largo de las colas.
     Los colores del estampado son los reales: no se recolorea.
+
+    Varios estampados pueden ser el mismo diseño en distintos colores (por ejemplo,
+    "Mariposas" en rojo, lila, verde...). En la página se muestra una sola punta de
+    listón por diseño y, al elegirla, los circulitos con sus colores.
     """
+
+    ESCOLAR, NAVIDENO, OTRO = "escolar", "navideno", "otro"
+    GRUPOS = [(ESCOLAR, "Escolares"), (NAVIDENO, "Navideños"), (OTRO, "Otros")]
 
     productos = models.ManyToManyField(
         Producto,
         related_name="estampados",
         limit_choices_to={"personalizable": True},
     )
-    nombre = models.CharField(max_length=60)  # "Tejido rojo"
-    clave = models.SlugField(max_length=40, unique=True)  # "tejido-rojo"
+    nombre = models.CharField(max_length=60)  # "Mariposas lila" (nombre completo)
+    clave = models.SlugField(max_length=40, unique=True)  # "mariposas-lila"
+    diseno = models.CharField(
+        "diseño", max_length=40, blank=True,
+        help_text="Los estampados con el mismo diseño se muestran juntos (por ejemplo, "
+                  "\"Mariposas\"). Si se deja vacío, el estampado es su propio diseño.",
+    )
+    grupo = models.CharField(max_length=10, choices=GRUPOS, default=OTRO)
+    color_nombre = models.CharField(
+        "color", max_length=30, blank=True,
+        help_text="Color de esta variante del diseño (\"Lila\"). Vacío si el diseño tiene un solo color.",
+    )
+    color_hex = models.CharField(
+        "código de color", max_length=7, blank=True,
+        help_text="Color del circulito que representa esta variante, por ejemplo #A98BD3.",
+    )
     imagen = models.ImageField(
         upload_to="estampados/", blank=True,
         help_text="Foto del listón recto y vertical, recortada a su ancho. Si se deja "
@@ -330,6 +351,11 @@ class Estampado(models.Model):
 
     def __str__(self):
         return f"{self.nombre} (+${self.precio_extra})"
+
+    @property
+    def nombre_diseno(self):
+        """Diseño al que pertenece; si no tiene, su propio nombre."""
+        return self.diseno or self.nombre
 
     @property
     def url_imagen(self):

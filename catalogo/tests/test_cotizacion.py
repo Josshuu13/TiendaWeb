@@ -96,8 +96,8 @@ def test_estampado_suma_precio_y_reemplaza_color_del_decorado():
     datos = mono(cantidad=2, estampado="tejido-rojo")
     del datos["opciones"]["decorado"]  # con estampado, el decorado no necesita color
     cot = cotizar(datos)
-    assert cot.precio_unitario == Decimal("110.00")  # 85 + 25
-    assert cot.total == Decimal("220.00")
+    assert cot.precio_unitario == Decimal("100.00")  # 85 + 15
+    assert cot.total == Decimal("200.00")
     assert cot.seleccion["Decorado"] == "Estampado: Tejido rojo"
 
 
@@ -169,7 +169,8 @@ def test_producto_inactivo_no_se_cotiza():
 def test_cargar_datos_demo_se_puede_repetir():
     call_command("cargar_datos_demo", verbosity=0)  # segunda vez: no debe duplicar
     assert Parte.objects.filter(producto__slug="mono-clasico").count() == 6
-    assert Estampado.objects.count() == 2
+    from catalogo.management.commands.cargar_datos_demo import ESTAMPADOS
+    assert Estampado.objects.count() == len(ESTAMPADOS)
     assert Producto.objects.filter(categoria__slug="kits").count() == 4
 
 
@@ -179,7 +180,7 @@ def test_api_devuelve_desglose(client):
     datos = mono(estampado="rombos-verde")
     r = client.post(reverse("catalogo:api_cotizar"), json.dumps(datos), content_type="application/json")
     assert r.status_code == 200
-    assert r.json()["total"] == "110.00"
+    assert r.json()["total"] == "100.00"  # 85 + 15 del estampado
 
 
 def test_api_ignora_precio_enviado_por_el_cliente(client):
@@ -272,3 +273,80 @@ def test_calcetines_con_foto_precio_tachado_y_unitalla():
         v = p.variantes.get()
         assert (v.talla, v.color.nombre) == ("UNI", color)
     assert not Producto.objects.filter(slug__in=CALCETINES_RETIRADOS, activo=True).exists()
+
+
+def test_estampados_tienen_su_foto_del_liston():
+    from django.contrib.staticfiles import finders
+    from catalogo.management.commands.cargar_datos_demo import ESTAMPADOS
+    for _nombre, clave, _precio in ESTAMPADOS:
+        assert finders.find(f"simulador/estampados/{clave}.jpg"), clave
+
+
+# --- Estampados por diseño (Mariposas, Lunares...) en varios colores ---
+
+def test_disenos_de_estampado_bien_armados():
+    from catalogo.management.commands.cargar_datos_demo import DISENOS_ESTAMPADOS
+    grupos_validos = {clave for clave, _ in Estampado.GRUPOS}
+    for diseno, grupo, variantes in DISENOS_ESTAMPADOS:
+        assert grupo in grupos_validos and variantes, diseno
+        if len(variantes) > 1:   # varios colores: cada uno con nombre y circulito
+            for color, _clave, codigo in variantes:
+                assert color and len(codigo) == 7 and codigo.startswith("#"), diseno
+    # Una variante por clave: no hay dos estampados con la misma foto.
+    claves = [v[1] for _d, _g, vs in DISENOS_ESTAMPADOS for v in vs]
+    assert len(claves) == len(set(claves))
+
+
+def test_todos_los_estampados_cuestan_lo_mismo():
+    from catalogo.management.commands.cargar_datos_demo import PRECIO_ESTAMPADO
+    precios = set(Estampado.objects.filter(activo=True).values_list("precio_extra", flat=True))
+    assert precios == {Decimal(PRECIO_ESTAMPADO)}
+
+
+def test_cotizar_estampado_de_color_guarda_el_nombre_completo():
+    datos = mono(estampado="mariposas-lila")
+    del datos["opciones"]["decorado"]
+    cot = cotizar(datos)
+    assert cot.precio_unitario == Decimal("100.00")
+    assert cot.seleccion["Decorado"] == "Estampado: Mariposas lila"
+
+
+def test_variante_de_color_desactivada_no_se_puede_comprar():
+    Estampado.objects.filter(clave="lunares-celeste").update(activo=False)
+    with pytest.raises(ErrorCotizacion, match="estampado"):
+        cotizar(mono(estampado="lunares-celeste"))
+
+
+def test_estampados_retirados_se_desactivan():
+    viejo = Estampado.objects.create(nombre="Viejo", clave="viejo", precio_extra=Decimal("15"))
+    call_command("cargar_datos_demo", verbosity=0)
+    viejo.refresh_from_db()
+    assert not viejo.activo
+
+
+def test_pagina_del_mono_agrupa_estampados_por_diseno(client):
+    html = client.get(reverse("catalogo:producto", args=["mono-clasico"])).content.decode()
+    for grupo in ["Escolares", "Navideños", "Otros"]:
+        assert f'<div class="grupo-colores">{grupo}</div>' in html
+    assert "Estampado <small>+$15</small>" in html
+    # Una punta por diseño, con el número de colores.
+    assert html.count('data-diseno="mariposas" title="Mariposas"') == 1
+    assert "8 colores" in html
+    # Cada variante es una opción del formulario con su nombre completo.
+    assert 'value="mariposas-lila"' in html and 'data-nombre="Mariposas lila"' in html
+
+
+def test_diseno_de_un_solo_color_no_muestra_circulitos(client):
+    html = client.get(reverse("catalogo:producto", args=["mono-clasico"])).content.decode()
+    inicio = html.index('data-colores-de="unicornios"')
+    bloque = html[inicio:html.index("</div>\n                      </div>", inicio)]
+    assert 'class="muestra"' not in bloque
+    inicio = html.index('data-colores-de="mariposas"')
+    bloque = html[inicio:html.index("</div>\n                      </div>", inicio)]
+    assert bloque.count('class="muestra"') == 8
+
+
+def test_decorado_liso_no_cobra_estampado():
+    cot = cotizar(mono())
+    assert cot.precio_unitario == Decimal("85.00")
+    assert not any("estampado" in c.descripcion.lower() for c in cot.conceptos)
