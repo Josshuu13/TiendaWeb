@@ -164,6 +164,52 @@ DISENOS_LISTOS = [
       "baseabajo": "Blanco", "tiras": "Blanco", "decorado": "Azul marino"}),
 ]
 
+
+def con_estampado(base_superior, base_inferior, patas, tiras, nudo):
+    """Colores de un moño cuyo decorado es un listón estampado (el decorado no lleva color)."""
+    return {"basearriba": base_superior, "baseabajo": base_inferior, "patas": patas,
+            "tiras": tiras, "nudo": nudo, "decorado": None}
+
+
+# Moños navideños y con decorado: (slug, nombre, {parte: color}, clave del estampado)
+DISENOS_NAVIDENOS = [
+    ("mono-plata-navideno", "Plata navideño",
+     con_estampado("Plateado", "Verde pino", "Rojo navidad", "Dorado", "Verde pino"), "metalico-plateado"),
+    ("mono-dorado-navideno", "Dorado navideño",
+     con_estampado("Verde pino", "Rojo navidad", "Verde pino", "Rojo navidad", "Dorado"), "metalico-dorado"),
+    ("mono-munecos-nieve-rojo", "Muñecos de nieve rojo",
+     con_estampado("Rojo navidad", "Rojo navidad", "Rojo navidad", "Rojo navidad", "Rojo navidad"), "nieve-cafe"),
+    ("mono-munecos-nieve-marino", "Muñecos de nieve marino",
+     con_estampado("Rojo navidad", "Azul marino", "Rojo navidad", "Blanco", "Blanco"), "nieve-azul-marino"),
+]
+
+DISENOS_CON_DECORADO = [
+    ("mono-fresas-lila", "Fresas lila",
+     con_estampado("Turquesa", "Crema", "Rosa pastel", "Turquesa", "Lila"), "cuadros-lila"),
+    ("mono-unicornio-pastel", "Unicornio pastel",
+     con_estampado("Lila", "Crema", "Rosa pastel", "Lila", "Turquesa"), "unicornios"),
+    ("mono-rojo-con-brillo", "Rojo con brillo",
+     con_estampado("Plateado", "Plateado", "Rojo navidad", "Plateado", "Rojo navidad"), "rosa-brillo-rojo"),
+    ("mono-catarinas", "Catarinas",
+     con_estampado("Plateado", "Celeste", "Plateado", "Plateado", "Celeste"), "catarinas"),
+    ("mono-tul-blanco-verde", "Tul blanco y verde",
+     con_estampado("Verde pino", "Plateado", "Verde pino", "Verde pino", "Verde pino"), "tul-blanco"),
+    ("mono-mariposas-doradas", "Mariposas doradas",
+     con_estampado("Verde pino", "Dorado", "Verde pino", "Dorado", "Verde pino"), "mariposas-dorado"),
+    ("mono-lunares-blanco-negro", "Lunares blanco y negro",
+     con_estampado("Negro", "Blanco", "Negro", "Blanco", "Blanco"), "lunares-negro"),
+    ("mono-rombos-pastel", "Rombos pastel",
+     con_estampado("Celeste", "Café arena", "Lila", "Rosa pastel", "Café arena"), "rombos-rosa"),
+]
+
+# Todos los moños listos, por sección de la página de Moños:
+# (slug, nombre, {parte: color}, estampado o None, colección)
+TODOS_LOS_DISENOS = (
+    [(s, n, p, e, Producto.NAVIDENO) for s, n, p, e in DISENOS_NAVIDENOS]
+    + [(s, n, p, None, Producto.UNIFORME) for s, n, p in DISENOS_LISTOS]
+    + [(s, n, p, e, Producto.DECORADO) for s, n, p, e in DISENOS_CON_DECORADO]
+)
+
 # ---------------------------------------------------------------------------
 # Listones estampados para el decorado (fotos en static/simulador/estampados/<clave>.jpg).
 # Cada diseño puede venir en varios colores; en la página se muestra una punta de
@@ -397,15 +443,23 @@ class Command(BaseCommand):
         # --- Diseños listos para usar (moños de uniforme, ver DISENOS_LISTOS) ---
         # El "Moño escolar" de la versión anterior deja de mostrarse.
         Producto.objects.filter(slug="mono-escolar").update(activo=False, destacado=False)
-        for slug, nombre, por_parte in DISENOS_LISTOS:
+        nombres_estampados = {clave: nombre for nombre, clave, _precio in ESTAMPADOS}
+        for slug, nombre, por_parte, estampado, coleccion in TODOS_LOS_DISENOS:
             # Colores del diseño sin repetir, para la descripción: "celeste y gris oxford".
-            usados = [c.lower() for c in dict.fromkeys(por_parte.values())]
+            usados = [c.lower() for c in dict.fromkeys(por_parte.values()) if c]
             lista_colores = usados[0] if len(usados) == 1 else ", ".join(usados[:-1]) + " y " + usados[-1]
+            if estampado:
+                detalle = (f"Moño listo para usar, con decorado de listón estampado "
+                           f"({nombres_estampados[estampado].lower()}) y colores {lista_colores}.")
+            else:
+                detalle = f"Moño listo para usar, en colores de uniforme: {lista_colores}."
             # En el carrito y los pedidos se lee "Moño azul marino clásico".
             nombre_producto = f"Moño {nombre[0].lower()}{nombre[1:]}"
             p = self._producto(slug, cats["monos"], nombre_producto, PRECIO_DISENO_LISTO, 0,
-                               f"Moño listo para usar, en colores de uniforme: {lista_colores}. "
-                               "Se envía tal cual, sin pasar por el simulador.")
+                               detalle + " Se envía tal cual, sin pasar por el simulador.")
+            if p.coleccion != coleccion:
+                p.coleccion = coleccion
+                p.save(update_fields=["coleccion"])
             # Una sola variante sin color: el diseño ya trae sus colores.
             # Así la página del producto no muestra un selector de color.
             Variante.objects.update_or_create(
@@ -474,7 +528,7 @@ class Command(BaseCommand):
         )
         temporada.productos.set(Producto.objects.filter(
             activo=True, categoria__slug__in=["monos", "sueteres", "kits"],
-        ).exclude(slug__in=["mono-escolar", "kit-escolar"] + [d[0] for d in DISENOS_LISTOS]))
+        ).exclude(slug__in=["mono-escolar", "kit-escolar"] + [d[0] for d in TODOS_LOS_DISENOS]))
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Categoria.objects.count()} categorías, "

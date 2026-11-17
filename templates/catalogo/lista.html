@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load humanize static %}
 {% comment %}
   Lista de productos (todo el catálogo o una categoría) con filtros por talla y color.
   Los filtros se mandan en la URL: ?talla=nina&color=12
@@ -33,9 +33,19 @@
   {% endif %}
 
   {% if personalizable %}
+    <!-- Atajos a cada sección. Son enlaces normales (#navideno, #uniforme...);
+         atajos.js los deja pegados arriba y marca la sección que se está viendo. -->
+    <nav class="atajos" aria-label="Categorías de moños" data-atajos>
+      <span class="atajos-titulo">Categorías:</span>
+      <a href="#disena">✏️ Diseña el tuyo</a>
+      {% for s in secciones %}
+        <a href="#{{ s.id }}">{{ s.emoji }} {{ s.nombre }} <small>{{ s.productos|length }}</small></a>
+      {% endfor %}
+    </nav>
+
     <!-- Sección "Diseña el tuyo": texto a la izquierda; moño y botón a la derecha
          (en celular se acomoda uno debajo del otro). -->
-    <section class="seccion">
+    <section class="seccion" id="disena">
       <div class="disena">
         <div class="disena-texto">
           <h3>{{ personalizable.nombre }}</h3>
@@ -56,16 +66,17 @@
       </div>
     </section>
 
-    {% if productos %}
-      <section class="seccion">
-        <h2 class="titulo-seccion">Diseños listos para usar. <span>Combinaciones de uniforme, listas para enviar.</span></h2>
+    <!-- Moños listos para usar, por sección (Navideños, Uniforme escolar, Con decorado) -->
+    {% for s in secciones %}
+      <section class="seccion" id="{{ s.id }}">
+        <h2 class="titulo-seccion">{{ s.titulo }} <span>{{ s.subtitulo }}</span></h2>
         <div class="productos listos">
-          {% for producto in productos %}
+          {% for producto in s.productos %}
             {% include "catalogo/_tarjeta.html" %}
           {% endfor %}
         </div>
       </section>
-    {% endif %}
+    {% endfor %}
   {% else %}
     <div class="productos">
       {% for producto in productos %}
@@ -76,4 +87,7 @@
     </div>
   {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+  {% if personalizable %}<script src="{% static 'js/atajos.js' %}?v={{ version_estaticos }}"></script>{% endif %}
 {% endblock %}
