@@ -247,7 +247,7 @@ def test_cotizar_diseno_listo():
 
 def test_pagina_de_monos_tiene_disena_el_tuyo_y_disenos_listos(client):
     html = client.get(reverse("catalogo:categoria", args=["monos"])).content.decode()
-    assert "¿Buscas un color en especial?" in html and "Uniforme escolar." in html
+    assert "¿Buscas un color en especial?" in html and "<h2>Uniforme escolar</h2>" in html
     assert "Personalizar" in html
     assert "filtro-color" not in html                  # sin filtro de color en Moños
     # El personalizable sale una sola vez (en "Diseña el tuyo"), no también como tarjeta.
@@ -291,8 +291,9 @@ def test_disenos_con_estampado_usan_estampados_y_colores_existentes():
 def test_pagina_de_monos_tiene_categorias_y_secciones_en_orden(client):
     html = client.get(reverse("catalogo:categoria", args=["monos"])).content.decode()
     assert "Categorías:" in html
-    for ancla in ["#disena", "#navideno", "#uniforme", "#decorado"]:
+    for ancla in ["#navideno", "#uniforme", "#decorado"]:
         assert f'href="{ancla}"' in html
+    assert 'href="#disena"' not in html          # "Diseña el tuyo" ya no va en la barra
     # Navideños primero (temporada), luego uniforme y al final con decorado.
     assert html.index('id="navideno"') < html.index('id="uniforme"') < html.index('id="decorado"')
     assert html.index("Moño plata navideño") < html.index('id="uniforme"')
