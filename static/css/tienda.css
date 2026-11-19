@@ -264,6 +264,10 @@ s { color: var(--suave); }
 .atajos a.activa { border-color: var(--tinta); background: var(--tinta); color: #fff; }
 .atajos a.activa small { background: rgba(255, 255, 255, .2); color: #fff; }
 section.seccion[id] { scroll-margin-top: 130px; }   /* que el título no quede tapado por la barra */
+/* Títulos de las secciones de moños listos: centrados, con el texto abajo más pequeño */
+.titulo-centrado { margin-bottom: 22px; text-align: center; }
+.titulo-centrado h2 { margin: 0; font-size: clamp(26px, 3.6vw, 32px); line-height: 1.15; }
+.titulo-centrado p { margin: 4px 0 0; color: var(--suave); font-size: 16px; }
 @media (max-width: 600px) {
   .atajos { margin-inline: -16px; padding-inline: 16px; }
   .atajos a { padding: 8px 13px; font-size: 13px; }

@@ -37,7 +37,6 @@
          atajos.js los deja pegados arriba y marca la sección que se está viendo. -->
     <nav class="atajos" aria-label="Categorías de moños" data-atajos>
       <span class="atajos-titulo">Categorías:</span>
-      <a href="#disena">✏️ Diseña el tuyo</a>
       {% for s in secciones %}
         <a href="#{{ s.id }}">{{ s.emoji }} {{ s.nombre }} <small>{{ s.productos|length }}</small></a>
       {% endfor %}
@@ -69,7 +68,11 @@
     <!-- Moños listos para usar, por sección (Navideños, Uniforme escolar, Con decorado) -->
     {% for s in secciones %}
       <section class="seccion" id="{{ s.id }}">
-        <h2 class="titulo-seccion">{{ s.titulo }} <span>{{ s.subtitulo }}</span></h2>
+        <!-- Título centrado y, debajo, el texto en letra más pequeña -->
+        <header class="titulo-centrado">
+          <h2>{{ s.nombre }}</h2>
+          <p>{{ s.subtitulo }}</p>
+        </header>
         <div class="productos listos">
           {% for producto in s.productos %}
             {% include "catalogo/_tarjeta.html" %}
