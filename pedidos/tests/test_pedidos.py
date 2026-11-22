@@ -63,13 +63,12 @@ def test_compra_con_carrito_vacio_regresa_al_carrito(cliente):
 
 
 def test_compra_crea_pedido_con_importes_del_servidor(cliente):
-    envio = ConfiguracionTienda.cargar().costo_envio
     antes = existencias()
     pedido = comprar(cliente, seleccion_sueter(cantidad=2))
     assert pedido.folio.startswith("PR-") and len(pedido.folio) == 11
     assert pedido.estado == Estado.PENDIENTE_PAGO
     assert pedido.subtotal == Decimal("960.00")
-    assert pedido.total == Decimal("960.00") + envio
+    assert pedido.costo_envio == 0 and pedido.total == Decimal("960.00")   # más de $300: envío gratis
     assert existencias() == antes - 2
     assert cliente.session["carrito"] == []
 
@@ -81,8 +80,15 @@ def test_direccion_invalida_no_crea_pedido(cliente):
 
 
 def test_el_costo_de_envio_se_edita_desde_la_configuracion(cliente):
-    ConfiguracionTienda.objects.update_or_create(pk=1, defaults={"costo_envio": Decimal("150.00")})
+    ConfiguracionTienda.objects.update_or_create(
+        pk=1, defaults={"costo_envio": Decimal("150.00"), "envio_gratis_desde": Decimal("1000.00")})
     assert comprar(cliente, seleccion_sueter()).costo_envio == Decimal("150.00")
+
+
+def test_pedido_debajo_del_monto_paga_envio(cliente):
+    envio = ConfiguracionTienda.cargar().costo_envio
+    pedido = comprar(cliente, seleccion_calcetin())          # $110, menos de $300
+    assert pedido.costo_envio == envio and pedido.total == Decimal("110.00") + envio
 
 
 def test_pedido_mixto_con_las_tres_lineas_toma_el_mas_tardado(cliente, settings):
@@ -102,7 +108,7 @@ def test_la_personalizacion_se_conserva_aunque_cambie_el_catalogo(cliente):
     assert len(linea.seleccion) == 6 and len(linea.opciones) == 6
     Producto.objects.filter(slug="mono-clasico").update(precio_base=Decimal("999.00"), nombre="Otro")
     linea.refresh_from_db()
-    assert linea.precio_unitario == Decimal("85.00") and linea.nombre == "Moño clásico personalizable"
+    assert linea.precio_unitario == Decimal("70.00") and linea.nombre == "Moño clásico personalizable"
 
 
 def test_si_se_agota_mientras_compra_no_se_crea_nada(cliente):

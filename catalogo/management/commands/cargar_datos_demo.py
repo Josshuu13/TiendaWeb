@@ -13,7 +13,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from catalogo.models import (
-    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, Producto, Temporada, Variante,
+    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, PiezaKit, Producto, Temporada,
+    Variante,
 )
 
 # ---------------------------------------------------------------------------
@@ -62,17 +63,33 @@ CATEGORIAS = [
     ("Kits navideños", "kits", "Moño, suéter y calcetines a juego. Más fácil de regalar y con descuento.", 4),
 ]
 
-# Kits navideños de ejemplo: (slug, nombre, precio, precio sin descuento, color, descripción)
+# Kits navideños: suéter + calcetines + moño a juego, armados con productos que ya
+# existen en la tienda. El precio "por separado" (tachado) se calcula sumando las
+# piezas, así el ahorro siempre es real. La imagen está en static/img/kits/<slug>.webp
+# (se genera con: python manage.py generar_imagenes_kits).
+# (slug, nombre, precio del kit, suéter (o None), calcetines, moño, descripción)
+# Productos que salen en "Destacados" de la portada (uno de cada tipo, para que haya variedad).
+DESTACADOS = ["mono-mariposas-doradas", "calcetines-santa-claus", "sueter-renos-azul", "kit-santa"]
+
 KITS = [
-    ("kit-reno-rojo", "Kit Reno rojo", "580.00", "680.00", "Rojo navidad",
-     "Moño navideño + Suéter Santa + Calcetines Santa, en rojo a juego."),
-    ("kit-pino", "Kit Pino", "590.00", "695.00", "Verde pino",
-     "Moño verde pino + Suéter Osito + Calcetines Rayas."),
-    ("kit-vino-dorado", "Kit Vino y dorado", "585.00", "685.00", "Vino",
-     "Moño vino y dorado + suéter + calcetines, ideal para posadas."),
-    ("kit-escolar", "Kit Escolar", "170.00", "195.00", "Azul marino",
-     "Moño escolar + calcetines (sin suéter), en colores de uniforme."),
+    ("kit-santa", "Kit Santa", "599.00",
+     "sueter-santa", "calcetines-santa-claus", "mono-munecos-nieve-rojo",
+     "El conjunto rojo para las fotos familiares: suéter, calcetines y moño a juego."),
+    ("kit-muneco-de-nieve", "Kit Muñeco de nieve", "569.00",
+     "sueter-muneco-nieve", "calcetines-muneco-de-nieve-completo", "mono-plata-navideno",
+     "Gris y blanco con detalles plateados, para una Navidad de nieve."),
+    ("kit-renos", "Kit Renos", "549.00",
+     "sueter-renos-azul", "calcetines-renos-de-santa", "mono-munecos-nieve-marino",
+     "Azul marino con renos y copos; el moño combina rojo y marino."),
+    ("kit-osito", "Kit Osito", "569.00",
+     "sueter-osito", "calcetines-muneco-de-nieve", "mono-dorado-navideno",
+     "Verde pino con osito navideño y moño dorado, tierno y fácil de combinar."),
+    ("kit-mini", "Kit Mini", "165.00",
+     None, "calcetines-rodolfo-el-reno", "mono-plata-navideno",
+     "Moño y calcetines navideños, sin suéter: el detalle perfecto para regalar."),
 ]
+# Kits de la primera versión: dejan de mostrarse.
+KITS_RETIRADOS = ["kit-reno-rojo", "kit-pino", "kit-vino-dorado", "kit-escolar"]
 
 # Suéteres: (slug, nombre, precio, color, descripción). Cada diseño es un producto con su
 # imagen en static/img/sueteres/<slug>.webp. Para agregar uno nuevo basta con un renglón
@@ -135,7 +152,9 @@ COMBINACIONES = [
 # Las imágenes (static/img/monos/<slug>.webp) se generan con las capas del
 # simulador:  python manage.py generar_imagenes_monos
 # ---------------------------------------------------------------------------
-PRECIO_DISENO_LISTO = "85.00"   # precio provisional; cámbienlo aquí o en el admin
+# Precios de los moños listos por sección (cámbienlos aquí o en el admin).
+PRECIO_DISENO_LISTO = "60.00"        # uniforme escolar (lisos)
+PRECIO_DISENO_ESPECIAL = "75.00"     # navideños y con decorado (llevan estampado)
 
 
 def un_color(color, tiras="Blanco"):
@@ -383,7 +402,7 @@ class Command(BaseCommand):
                 "descripcion": "Elige el color de cada parte del moño o un listón "
                                "estampado para el decorado, y mira cómo queda antes "
                                "de comprarlo.",
-                "precio_base": Decimal("85.00"),
+                "precio_base": Decimal("70.00"),   # personalizable liso; +$15 con estampado
                 "dias_elaboracion": 3,
                 "personalizable": True,
                 "destacado": True,
@@ -443,20 +462,12 @@ class Command(BaseCommand):
         # --- Diseños listos para usar (moños de uniforme, ver DISENOS_LISTOS) ---
         # El "Moño escolar" de la versión anterior deja de mostrarse.
         Producto.objects.filter(slug="mono-escolar").update(activo=False, destacado=False)
-        nombres_estampados = {clave: nombre for nombre, clave, _precio in ESTAMPADOS}
         for slug, nombre, por_parte, estampado, coleccion in TODOS_LOS_DISENOS:
-            # Colores del diseño sin repetir, para la descripción: "celeste y gris oxford".
-            usados = [c.lower() for c in dict.fromkeys(por_parte.values()) if c]
-            lista_colores = usados[0] if len(usados) == 1 else ", ".join(usados[:-1]) + " y " + usados[-1]
-            if estampado:
-                detalle = (f"Moño listo para usar, con decorado de listón estampado "
-                           f"({nombres_estampados[estampado].lower()}) y colores {lista_colores}.")
-            else:
-                detalle = f"Moño listo para usar, en colores de uniforme: {lista_colores}."
             # En el carrito y los pedidos se lee "Moño azul marino clásico".
             nombre_producto = f"Moño {nombre[0].lower()}{nombre[1:]}"
-            p = self._producto(slug, cats["monos"], nombre_producto, PRECIO_DISENO_LISTO, 0,
-                               detalle + " Se envía tal cual, sin pasar por el simulador.")
+            precio = PRECIO_DISENO_ESPECIAL if estampado else PRECIO_DISENO_LISTO
+            # Sin descripción: el nombre y la foto ya dicen cómo es.
+            p = self._producto(slug, cats["monos"], nombre_producto, precio, 0, "")
             if p.coleccion != coleccion:
                 p.coleccion = coleccion
                 p.save(update_fields=["coleccion"])
@@ -500,14 +511,27 @@ class Command(BaseCommand):
                           "existencias": existencias, "precio_extra": Decimal("0")},
             )
 
-        # --- Kits navideños (se venden como un producto con precio de paquete) ---
-        for slug, nombre, precio, anterior, color, desc in KITS:
-            p = self._producto(slug, cats["kits"], nombre, precio, 3, desc,
-                               destacado=slug != "kit-escolar")  # los destacados salen en la portada
-            p.precio_anterior = Decimal(anterior)
+        # --- Kits navideños (ver KITS): un producto con precio de paquete y sus piezas ---
+        Producto.objects.filter(slug__in=KITS_RETIRADOS).update(activo=False, destacado=False)
+        for slug, nombre, precio, sueter, calcetines, mono, desc in KITS:
+            piezas = [Producto.objects.get(slug=s) for s in (sueter, calcetines, mono) if s]
+            dias = max(pz.dias_elaboracion for pz in piezas)   # tarda lo que la pieza más lenta
+            p = self._producto(slug, cats["kits"], nombre, precio, dias, desc, destacado=True)
+            # Piezas del kit, en orden: suéter, calcetines, moño.
+            p.piezas.exclude(producto__in=piezas).delete()
+            for orden, pz in enumerate(piezas):
+                PiezaKit.objects.update_or_create(kit=p, producto=pz, defaults={"orden": orden})
+            # Precio tachado = suma de las piezas (el ahorro sale solo).
+            p.precio_anterior = sum(pz.precio_base for pz in piezas)
             p.save(update_fields=["precio_anterior"])
-            p.variantes.exclude(color=colores[color]).delete()
-            self._variante(p, "UNI", colores[color], 8)
+            # Tallas: las del suéter (con su mismo costo extra); sin suéter, unitalla.
+            if sueter:
+                tallas = [(v.talla, v.color, v.precio_extra) for v in piezas[0].variantes.filter(activa=True)]
+            else:
+                tallas = [("UNI", piezas[0].variantes.first().color, Decimal("0"))]
+            p.variantes.exclude(talla__in=[t for t, _c, _e in tallas]).delete()
+            for talla, color, extra in tallas:
+                self._variante(p, talla, color, 8, extra)
 
         # --- Guía de tallas y temporada de ejemplo ---
         cats["sueteres"].guia_tallas = GUIA_TALLAS_SUETERES
@@ -526,9 +550,18 @@ class Command(BaseCommand):
                 "boton_texto": "Diseñar mi moño",
             },
         )
+        # Productos de la temporada navideña: el moño personalizable, los moños navideños,
+        # los suéteres, los calcetines y los kits (los moños de uniforme y con decorado no).
+        navidenos = [d[0] for d in TODOS_LOS_DISENOS if d[4] == Producto.NAVIDENO]
         temporada.productos.set(Producto.objects.filter(
-            activo=True, categoria__slug__in=["monos", "sueteres", "kits"],
-        ).exclude(slug__in=["mono-escolar", "kit-escolar"] + [d[0] for d in TODOS_LOS_DISENOS]))
+            activo=True, categoria__slug__in=["monos", "sueteres", "calcetines", "kits"],
+        ).exclude(
+            slug__in=["mono-escolar"] + KITS_RETIRADOS + [d[0] for d in TODOS_LOS_DISENOS if d[0] not in navidenos]
+        ))
+
+        # Destacados de la portada: se escogen a mano (máximo 4, caben en un renglón).
+        Producto.objects.exclude(slug__in=DESTACADOS).update(destacado=False)
+        Producto.objects.filter(slug__in=DESTACADOS).update(destacado=True)
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Categoria.objects.count()} categorías, "

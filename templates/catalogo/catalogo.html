@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}
+  Catálogo general (/catalogo/): funciona como índice de la tienda.
+  Un renglón por categoría (máximo 5 productos) y un botón para ver todos los de esa categoría.
+{% endcomment %}
+{% block titulo %}Catálogo{% endblock %}
+{% block og_titulo %}Catálogo · {{ nombre_tienda }}{% endblock %}
+{% block descripcion %}Catálogo completo de la tienda.{% endblock %}
+{% block contenido %}
+<div class="contenedor">
+  <nav aria-label="Ruta" class="miga">
+    <ol>
+      <li><a href="{% url 'catalogo:inicio' %}">Inicio</a></li>
+      <li aria-current="page">Catálogo</li>
+    </ol>
+  </nav>
+  <h1 class="h-pagina">Catálogo completo</h1>
+  <p class="descripcion">Un vistazo a todo lo que tenemos. Entra a cada categoría para ver todos sus productos.</p>
+
+  {% if grupos %}
+    <!-- Atajos a cada categoría (atajos.js los deja pegados arriba al bajar) -->
+    {% if grupos|length > 1 %}
+      <nav class="atajos" aria-label="Categorías del catálogo" data-atajos>
+        <span class="atajos-titulo">Categorías:</span>
+        {% for g in grupos %}
+          <a href="#{{ g.categoria.slug }}">{{ g.categoria.nombre }} <small>{{ g.total }}</small></a>
+        {% endfor %}
+      </nav>
+    {% endif %}
+
+    {% for g in grupos %}
+      <section class="seccion" id="{{ g.categoria.slug }}">
+        <header class="titulo-centrado">
+          <h2>{{ g.categoria.nombre }}</h2>
+          {% if g.categoria.descripcion %}<p>{{ g.categoria.descripcion }}</p>{% endif %}
+        </header>
+        <div class="productos listos cinco">
+          {% for producto in g.productos %}{% include "catalogo/_tarjeta.html" %}{% endfor %}
+        </div>
+        <!-- Botón centrado para entrar a la categoría completa (solo si hay más de los que se ven) -->
+        {% if g.total > g.productos|length %}
+          <div class="ver-categoria">
+            <a class="btn btn-secundario" href="{{ g.categoria.get_absolute_url }}">Ver los {{ g.total }} {{ g.categoria.nombre|lower }} →</a>
+          </div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% else %}
+    <p class="descripcion">Pronto habrá productos aquí.</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+  {% if grupos|length > 1 %}<script src="{% static 'js/atajos.js' %}?v={{ version_estaticos }}"></script>{% endif %}
+{% endblock %}

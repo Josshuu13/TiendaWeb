@@ -21,7 +21,8 @@ def datos(catalogo):
 
 
 def resumen(client):
-    return Carrito(client.session).resumen(ConfiguracionTienda.cargar().costo_envio)
+    tienda = ConfiguracionTienda.cargar()
+    return Carrito(client.session).resumen(tienda.costo_envio, tienda.envio_gratis_desde)
 
 
 def test_agregar_suma_piezas_y_junta_repetidos(client):
@@ -37,8 +38,8 @@ def test_carrito_mixto_con_personalizacion(client):
     agregar(client, seleccion_calcetin())
     r = resumen(client)
     assert len(r.lineas) == 3
-    assert r.subtotal == Decimal("85.00") + Decimal("480.00") + Decimal("110.00")
-    assert r.total == r.subtotal + ConfiguracionTienda.cargar().costo_envio
+    assert r.subtotal == Decimal("70.00") + Decimal("480.00") + Decimal("110.00")
+    assert r.envio_gratis and r.total == r.subtotal   # pasa de $300: envío gratis
 
 
 def test_el_precio_enviado_por_el_cliente_se_ignora(client):
@@ -139,3 +140,38 @@ def test_vista_previa_valida_se_conserva(client):
 ], ids=["javascript", "html", "no-es-imagen", "demasiado-grande", "numero"])
 def test_vista_previa_no_valida_se_descarta(vista):
     assert vista_valida(vista) == ""
+
+
+# --- Envío gratis desde cierto monto ---
+
+def test_debajo_del_monto_se_cobra_envio_y_se_dice_cuanto_falta(client):
+    tienda = ConfiguracionTienda.cargar()          # $99 de envío, gratis desde $300
+    agregar(client, seleccion_calcetin())          # $110
+    r = resumen(client)
+    assert r.envio == tienda.costo_envio and r.total == Decimal("110.00") + tienda.costo_envio
+    assert r.falta_para_envio_gratis == Decimal("190.00") and r.avance_envio_gratis == 36
+    html = client.get(reverse("carrito:ver")).content.decode()
+    assert "Te faltan" in html and "190" in html
+
+
+def test_al_llegar_al_monto_el_envio_es_gratis(client):
+    agregar(client, seleccion_calcetin(cantidad=3))   # $330
+    r = resumen(client)
+    assert r.envio_gratis and r.envio == 0 and r.total == r.subtotal
+    assert r.falta_para_envio_gratis == 0 and r.avance_envio_gratis == 100
+    html = client.get(reverse("carrito:ver")).content.decode()
+    assert "Tienes envío gratis" in html and "Gratis" in html
+
+
+def test_con_monto_en_cero_no_hay_envio_gratis(client):
+    ConfiguracionTienda.objects.update_or_create(pk=1, defaults={"envio_gratis_desde": Decimal("0")})
+    agregar(client, seleccion_calcetin(cantidad=5))
+    r = resumen(client)
+    assert not r.envio_gratis and r.envio == ConfiguracionTienda.cargar().costo_envio
+    assert "Te faltan" not in client.get(reverse("carrito:ver")).content.decode()
+
+
+def test_el_carrito_muestra_precio_por_pieza_si_hay_varias(client):
+    agregar(client, seleccion_calcetin(cantidad=2))
+    html = client.get(reverse("carrito:ver")).content.decode()
+    assert "$110.00 c/u" in html

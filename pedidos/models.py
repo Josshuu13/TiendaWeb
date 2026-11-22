@@ -38,6 +38,11 @@ class ConfiguracionTienda(models.Model):
         "costo de envío", max_digits=8, decimal_places=2, default=99,
         validators=[MinValueValidator(0)], help_text="Tarifa fija para todo México.",
     )
+    envio_gratis_desde = models.DecimalField(
+        "envío gratis desde", max_digits=8, decimal_places=2, default=300,
+        validators=[MinValueValidator(0)],
+        help_text="Si el subtotal llega a este monto, el envío es gratis. Pon 0 para no ofrecer envío gratis.",
+    )
     telefono_soporte = models.CharField(
         "teléfono de soporte", max_length=10, default="5500000000", validators=[validador_telefono],
         help_text="Número ficticio de ejemplo; cámbialo por el real al presentar.",

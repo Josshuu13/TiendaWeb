@@ -36,7 +36,9 @@
 
   /** Dibuja los botones de color. */
   function pintarColores() {
-    document.getElementById("opcion-color").hidden = colores.length === 0;
+    // Sin colores, o en kits (data-ocultar: el color ya viene definido por el kit), no se muestra.
+    const opcionColor = document.getElementById("opcion-color");
+    opcionColor.hidden = colores.length === 0 || opcionColor.hasAttribute("data-ocultar");
     cajaColores.innerHTML = colores.map((c) => `
       <button type="button" class="color-boton ${c.id === colorSel ? "sel" : ""}" data-color="${c.id}"
               title="${c.nombre}" aria-label="${c.nombre}" aria-pressed="${c.id === colorSel}"

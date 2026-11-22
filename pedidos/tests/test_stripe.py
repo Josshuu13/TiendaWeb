@@ -4,6 +4,7 @@ import hmac
 import json
 import time
 from types import SimpleNamespace
+from decimal import Decimal
 
 import pytest
 import stripe
@@ -11,7 +12,7 @@ from django.urls import reverse
 
 from conftest import comprar, seleccion_sueter
 from pedidos import pagos, servicios
-from pedidos.models import EventoPago, Pedido
+from pedidos.models import ConfiguracionTienda, EventoPago, Pedido
 
 pytestmark = pytest.mark.django_db
 SECRETO = "whsec_prueba"
@@ -119,6 +120,8 @@ def test_sesion_de_pago_usa_los_importes_del_servidor(cliente, settings, monkeyp
         return SimpleNamespace(id="cs_test_9", url="https://checkout.stripe.com/c/pay/cs_test_9")
 
     monkeypatch.setattr(stripe.checkout.Session, "create", crear)
+    # Sin envío gratis, para que el envío salga como su propio renglón en Stripe.
+    ConfiguracionTienda.objects.update_or_create(pk=1, defaults={"envio_gratis_desde": Decimal("0")})
     cliente.post(reverse("carrito:agregar"), json.dumps(seleccion_sueter(cantidad=2)), content_type="application/json")
     from conftest import DIRECCION
     r = cliente.post(reverse("pedidos:compra"), DIRECCION)

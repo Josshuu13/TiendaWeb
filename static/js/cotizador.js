@@ -60,14 +60,20 @@
 
   /** Dibuja la tabla del desglose con formato de pesos mexicanos. */
   function pintarCotizacion(r) {
-    const filas = r.conceptos
-      .map((c) => `<tr><td>${c.descripcion}</td><td>${pesos.format(c.importe)}</td></tr>`)
-      .join("");
+    // El desglose solo se muestra si hay extras (estampado, talla grande...). Si el
+    // precio es el de la página, repetirlo no aporta nada.
+    const conExtras = r.conceptos.length > 1;
+    const filas = conExtras
+      ? r.conceptos.map((c) => `<tr><td>${c.descripcion}</td><td>${pesos.format(c.importe)}</td></tr>`).join("")
+      : "";
+    const porPieza = conExtras && r.cantidad > 1
+      ? `<tr><td>Precio por pieza</td><td>${pesos.format(r.precio_unitario)}</td></tr>`
+      : "";
     const plural = r.dias_elaboracion === 1 ? "día" : "días";
     cuerpo.className = "nota";
     cuerpo.innerHTML = `
       <table class="tabla-importes"><tbody>${filas}
-        <tr><td>Precio por pieza</td><td>${pesos.format(r.precio_unitario)}</td></tr>
+        ${porPieza}
         <tr><td>Cantidad</td><td>× ${r.cantidad}</td></tr>
         <tr class="fila-total"><td>Total</td><td>${pesos.format(r.total)}</td></tr>
       </tbody></table>

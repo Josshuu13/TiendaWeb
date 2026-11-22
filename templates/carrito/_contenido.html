@@ -42,7 +42,10 @@
                       {% csrf_token %}
                       <button class="btn btn-enlace" type="submit">Quitar</button>
                     </form>
-                    <span class="linea-importe">{{ linea.cotizacion.total|pesos }}</span>
+                    <span class="linea-importe">
+                      {{ linea.cotizacion.total|pesos }}
+                      {% if linea.cantidad > 1 %}<small>{{ linea.cotizacion.precio_unitario|pesos }} c/u</small>{% endif %}
+                    </span>
                   </div>
                 </div>
               {% else %}
@@ -61,6 +64,23 @@
 
       <aside class="panel panel-fijo" aria-label="Resumen">
         <h2>Resumen</h2>
+        {% if resumen.envio_gratis_desde %}
+          <!-- Avance hacia el envío gratis: motiva a completar el monto -->
+          <div class="envio-gratis{% if resumen.envio_gratis %} logrado{% endif %}">
+            {% if resumen.envio_gratis %}
+              <p class="envio-logrado">
+                <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#check"/></svg>
+                <b>Tienes envío gratis</b>
+              </p>
+            {% else %}
+              <p>Te faltan <b>{{ resumen.falta_para_envio_gratis|pesos }}</b> para tener <b>envío gratis</b></p>
+            {% endif %}
+            <div class="envio-gratis-barra" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                 aria-valuenow="{{ resumen.avance_envio_gratis }}" aria-label="Avance hacia el envío gratis">
+              <span style="width: {{ resumen.avance_envio_gratis }}%"></span>
+            </div>
+          </div>
+        {% endif %}
         {% include "pedidos/_importes.html" with subtotal=resumen.subtotal envio=resumen.envio total=resumen.total %}
         <p class="nota">{{ resumen.texto_entrega }}</p>
         {% if resumen.tiene_errores %}

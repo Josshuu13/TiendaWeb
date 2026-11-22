@@ -9,7 +9,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (
-    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, Producto, Temporada, Variante,
+    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, PiezaKit, Producto, Temporada,
+    Variante,
 )
 
 # Textos del encabezado del panel.
@@ -59,6 +60,14 @@ class ParteInline(admin.StackedInline):
     filter_horizontal = ["colores"]  # selector cómodo para elegir colores permitidos
 
 
+class PiezaKitInline(admin.TabularInline):
+    """Productos que incluye un kit (solo para productos de la categoría Kits navideños)."""
+    model = PiezaKit
+    fk_name = "kit"
+    extra = 0
+    autocomplete_fields = ["producto"]
+
+
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
     list_display = [
@@ -74,7 +83,17 @@ class ProductoAdmin(admin.ModelAdmin):
         """Personalizable -> muestra sus Partes. De catálogo -> muestra sus Variantes."""
         if obj and obj.personalizable:
             return [ParteInline]
+        if obj and obj.categoria.slug == "kits":
+            return [PiezaKitInline, VarianteInline]
         return [VarianteInline]
+
+    def save_related(self, request, form, formsets, change):
+        """Al guardar un kit, el precio tachado se recalcula con la suma de sus piezas."""
+        super().save_related(request, form, formsets, change)
+        kit = form.instance
+        if kit.es_kit:
+            kit.precio_anterior = kit.precio_por_separado
+            kit.save(update_fields=["precio_anterior"])
 
     @admin.display(description="Existencias")
     def existencias(self, obj):

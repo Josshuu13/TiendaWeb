@@ -53,10 +53,16 @@ def _iniciar_pago(request, pedido):
     return redirect(pedido)
 
 
+def _resumen(carrito):
+    """Resumen del carrito con la tarifa de envío y el monto de envío gratis vigentes."""
+    tienda = ConfiguracionTienda.cargar()
+    return carrito.resumen(tienda.costo_envio, tienda.envio_gratis_desde)
+
+
 @login_required
 def compra(request):
     carrito = Carrito(request.session)
-    resumen = carrito.resumen(ConfiguracionTienda.cargar().costo_envio)
+    resumen = _resumen(carrito)
     if not resumen.lineas:
         return redirect("carrito:ver")
     if resumen.tiene_errores:

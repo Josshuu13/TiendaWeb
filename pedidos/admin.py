@@ -170,7 +170,7 @@ class SolicitudPosventaAdmin(admin.ModelAdmin):
 
 @admin.register(ConfiguracionTienda)
 class ConfiguracionTiendaAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "costo_envio", "telefono_soporte", "whatsapp"]
+    list_display = ["__str__", "costo_envio", "envio_gratis_desde", "telefono_soporte", "whatsapp"]
 
     def has_add_permission(self, request):
         return not ConfiguracionTienda.objects.exists()
