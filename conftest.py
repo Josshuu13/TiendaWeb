@@ -21,6 +21,18 @@ DIRECCION = {
 }
 
 
+@pytest.fixture(autouse=True)
+def sin_llaves_de_stripe(settings):
+    """Las pruebas no usan las llaves de Stripe que alguien tenga en su .env.
+
+    Con llaves, la tienda manda a Stripe en lugar del pago simulado y las pruebas dependerían de
+    internet y de una cuenta real. Las pruebas de Stripe ponen sus propias llaves de mentira.
+    """
+    settings.STRIPE_SECRET_KEY = ""
+    settings.STRIPE_WEBHOOK_SECRET = ""
+    settings.PAGO_SIMULADO = True
+
+
 @pytest.fixture
 def catalogo(db):
     call_command("cargar_datos_demo", verbosity=0)

@@ -33,6 +33,10 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
       - name: Pruebas
         run: pytest -q
+      - name: Navegador para las pruebas de extremo a extremo
+        run: playwright install --with-deps chromium
+      - name: Pruebas en navegador (recorrido de compra)
+        run: pytest -q -m e2e
       - name: Revisión de seguridad para producción
         run: python manage.py check --deploy --fail-level ERROR
         env:

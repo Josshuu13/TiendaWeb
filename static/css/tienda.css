@@ -657,3 +657,25 @@ details.plegable form { margin-top: 12px; }
 .incluye-item em { color: var(--suave); font-size: 14px; font-style: normal; }
 .incluye-total { display: flex; justify-content: space-between; padding: 8px 4px 0; color: var(--suave); font-size: 14px; }
 .incluye-mini { margin-bottom: 2px; color: var(--suave); font-size: 12px; }
+
+/* ===== Personalizador de calcetas ===== */
+.calceta-visor { display: grid; place-items: center; padding-block: 8px; }
+/* El ancho manda y el alto sale de la proporción del canvas (3:4), así nunca se sale del recuadro. */
+.calceta-visor canvas { display: block; width: min(100%, 400px, 52vh); height: auto; touch-action: none; cursor: grab; }
+.calceta-visor canvas:active { cursor: grabbing; }
+fieldset.opcion { min-width: 0; margin-inline: 0; padding: 0; border: 0; }
+fieldset.opcion > legend { padding: 0; }
+.disenos-calceta { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.diseno-opcion {
+  display: grid; justify-items: center; gap: 4px; padding: 10px 6px; border: 1px solid var(--linea);
+  border-radius: var(--radio-m); background: var(--superficie); font-size: 13px; text-align: center; cursor: pointer;
+}
+.diseno-opcion img { width: 44px; height: 44px; padding: 4px; border-radius: 8px; background: #3a3a3c; }
+.diseno-opcion small { color: var(--suave); }
+.diseno-vacio { width: 44px; height: 44px; border: 2px dashed var(--linea); border-radius: 8px; }
+.btn-check:checked + .diseno-opcion { border-color: var(--acento); box-shadow: inset 0 0 0 1px var(--acento); }
+.btn-check:focus-visible + .diseno-opcion { outline: 2px solid #0071e3; outline-offset: 2px; }
+.ajuste { display: grid; grid-template-columns: 88px minmax(0, 1fr) 52px; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 15px; }
+.ajuste output { color: var(--suave); text-align: right; font-variant-numeric: tabular-nums; }
+.rango { width: 100%; accent-color: var(--acento); }
+.selector { min-height: 44px; padding: 8px 12px; border: 1px solid var(--linea); border-radius: var(--radio-m); background: var(--superficie); font-size: 16px; }

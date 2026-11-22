@@ -30,6 +30,8 @@ erDiagram
     PRODUCTO ||--o{ VARIANTE : tiene
     PRODUCTO ||--o{ PARTE : "tiene capas"
     PRODUCTO ||--o{ COMBINACION : ofrece
+    PRODUCTO ||--o{ PIEZAKIT : "kit incluye"
+    PRODUCTO }o--o{ DISENOCALCETA : "admite diseño"
     TEMPORADA }o--o{ PRODUCTO : presenta
     PRODUCTO }o--o{ ESTAMPADO : admite
     COLOR ||--o{ VARIANTE : pinta

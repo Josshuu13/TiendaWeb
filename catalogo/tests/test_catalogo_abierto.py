@@ -97,7 +97,7 @@ def test_alta_completa_desde_el_admin_con_foto(client, settings, tmp_path):
     Image.new("RGB", (20, 20), "red").save(salida, "PNG")
     r = client.post(reverse("admin:catalogo_producto_add"), {
         "categoria": categoria.pk, "nombre": "Vela", "slug": "vela", "descripcion": "Aroma a canela.",
-        "precio_base": "99.00", "dias_elaboracion": 0, "activo": "on",
+        "precio_base": "99.00", "dias_elaboracion": 0, "activo": "on", "tipo_personalizacion": "mono",
         "imagen": SimpleUploadedFile("vela.png", salida.getvalue(), content_type="image/png"),
         "variantes-TOTAL_FORMS": 2, "variantes-INITIAL_FORMS": 0,
         "variantes-0-talla": "CH", "variantes-0-existencias": 3, "variantes-0-precio_extra": 0,

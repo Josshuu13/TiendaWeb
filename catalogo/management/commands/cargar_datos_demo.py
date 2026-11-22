@@ -13,9 +13,25 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from catalogo.models import (
-    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, PiezaKit, Producto, Temporada,
-    Variante,
+    Categoria, Color, Combinacion, CombinacionParte, DisenoCalceta, Estampado, Parte, PiezaKit, Producto,
+    Temporada, Variante,
 )
+
+# Calcetas personalizables (el personalizador 2D del anteproyecto): el cliente elige el
+# color de la calceta y de sus detalles, un diseño, su posición, su tamaño y la talla.
+COLORES_CALCETA = [
+    "Rojo navidad", "Verde pino", "Verde navidad", "Azul marino", "Negro",
+    "Blanco", "Gris Oxford", "Crema", "Rosa pastel", "Vino",
+]
+COLORES_DETALLES_CALCETA = COLORES_CALCETA + ["Dorado", "Plateado"]
+DISENOS_CALCETA = [  # (clave, nombre, precio extra); su dibujo: static/simulador/calceta/disenos/
+    ("reno", "Reno", "25.00"),
+    ("pino", "Pino", "20.00"),
+    ("copo", "Copo de nieve", "20.00"),
+    ("estrella", "Estrella", "20.00"),
+    ("baston", "Bastón de caramelo", "20.00"),
+    ("regalo", "Regalo", "20.00"),
+]
 
 # ---------------------------------------------------------------------------
 # Paleta de listón grosgrain: los colores más buscados para moños escolares
@@ -536,6 +552,36 @@ class Command(BaseCommand):
         # --- Guía de tallas y temporada de ejemplo ---
         cats["sueteres"].guia_tallas = GUIA_TALLAS_SUETERES
         cats["sueteres"].save(update_fields=["guia_tallas"])
+
+        # --- Calcetas personalizables ---
+        calcetas, _ = Producto.objects.update_or_create(
+            slug="calcetas-personalizables",
+            defaults={
+                "categoria": cats["calcetines"],
+                "nombre": "Calcetas personalizables",
+                "descripcion": "Elige el color de la calceta y de sus detalles, ponle un diseño "
+                               "navideño y acomódalo a tu gusto. Se elaboran sobre pedido.",
+                "precio_base": Decimal("99.00"),
+                "dias_elaboracion": 3,
+                "personalizable": True,
+                "tipo_personalizacion": Producto.CALCETA,
+            },
+        )
+        for orden, (clave, nombre, inicial, nombres) in enumerate([
+            ("cuerpo", "Color de la calceta", "Rojo navidad", COLORES_CALCETA),
+            ("detalles", "Puño, talón y punta", "Blanco", COLORES_DETALLES_CALCETA),
+        ], start=1):
+            parte, _ = Parte.objects.update_or_create(
+                producto=calcetas, clave=clave,
+                defaults={"nombre": nombre, "orden": orden, "paso": orden, "color_inicial": colores[inicial]},
+            )
+            parte.colores.set([colores[n] for n in nombres if n in colores])
+        for orden, (clave, nombre, extra) in enumerate(DISENOS_CALCETA):
+            diseno, _ = DisenoCalceta.objects.update_or_create(
+                clave=clave,
+                defaults={"nombre": nombre, "precio_extra": Decimal(extra), "orden": orden, "activo": True},
+            )
+            diseno.productos.add(calcetas)
 
         temporada, _ = Temporada.objects.update_or_create(
             slug="navidad-2026",

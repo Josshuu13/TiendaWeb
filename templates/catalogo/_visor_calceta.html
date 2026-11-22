@@ -1,0 +1,16 @@
+{% comment %}
+  Vista previa de la calceta. calceta.js la dibuja en el canvas con los colores, el
+  diseño, la posición y el tamaño que elija el cliente.
+{% endcomment %}
+<div class="simulador-fijo">
+  <div class="simulador-caja">
+    <div class="calceta-visor">
+      <canvas id="calceta" width="720" height="900" role="img" aria-label="Vista previa de tu calceta"></canvas>
+    </div>
+  </div>
+  <p class="nota centrado">
+    Arrastra el diseño sobre la calceta o usa los controles de posición y tamaño.
+    El tono puede variar ligeramente según tu pantalla.
+  </p>
+</div>
+{{ config_calceta|json_script:"config-calceta" }}

@@ -56,3 +56,17 @@ Las imágenes que deban verlas todos van en `static/`, porque `media/` y `db.sql
 - Código, modelos y comentarios en español, como el resto del proyecto.
 - Ramas: `feature/...` para funciones nuevas y `fix/...` para correcciones.
 - Commits en presente y con una idea cada uno: "Agrega", "Corrige", "Actualiza".
+
+## Revisiones obligatorias
+
+El anteproyecto promete "un repositorio compartido con tareas y revisiones". Para que quede
+evidencia, cada Pull Request necesita la aprobación de otra persona del equipo antes de unirse:
+
+1. Quien lo revisa abre el Pull Request y entra a **Files changed**.
+2. Pulsa **Review changes**, elige **Approve** (o **Request changes** con un comentario) y pulsa **Submit review**.
+3. Solo después se pulsa **Merge pull request**.
+
+Para que GitHub lo exija, el dueño del repositorio (Josue) puede crear una regla en
+**Settings > Branches > Add branch ruleset** sobre `main`, con *Require a pull request before
+merging* y una aprobación. En repositorios privados, esa regla solo se aplica con GitHub Pro o
+superior; el GitHub Student Developer Pack lo incluye gratis para estudiantes.

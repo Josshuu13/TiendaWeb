@@ -10,6 +10,13 @@
 6. **¿Necesitas ayuda?** Usa el botón de WhatsApp del pedido; el mensaje ya incluye tu ID.
 7. **¿Quieres cancelar o devolver?** Envía la solicitud desde tu pedido.
 
+### Calcetas personalizables
+
+1. Elige el color de la calceta y el de su puño, talón y punta.
+2. Escoge un diseño: reno, pino, copo de nieve, estrella, bastón o regalo.
+3. Acomódalo arrastrándolo sobre la calceta o con los controles de posición y tamaño.
+4. Elige la talla y agrégala al carrito. El precio incluye el diseño elegido.
+
 ## Para el equipo de la tienda
 
 Entra a `/admin/`.
@@ -25,6 +32,10 @@ También puedes elegir varios pedidos en la lista y usar *Avanzar al siguiente e
 
 **Cambiar envío y soporte.** En *Configuración de la tienda* se editan el costo de envío, el teléfono,
 el WhatsApp y el horario. Los números iniciales son ficticios.
+
+**Diseños de calcetas.** En *Diseños de calceta* se cambia el precio de cada diseño o se
+desactiva si se acaba el material. Para agregar uno nuevo, sube un PNG con fondo transparente y
+marca el producto *Calcetas personalizables*.
 
 **Agregar cualquier producto.** No hace falta programar:
 

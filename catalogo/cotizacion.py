@@ -18,13 +18,25 @@ Formato de entrada (el mismo que se mandará al carrito):
 
   Si se elige un estampado, la parte que lo admite (el decorado) ya no necesita
   color, porque se muestra con los colores reales del listón estampado.
+
+  Calceta personalizable (colores por id; diseño por clave, opcional; posición y
+  tamaño en porcentaje):
+    {"producto": "calcetas-personalizables",
+     "opciones": {"cuerpo": 11, "detalles": 1, "talla": "6-8",
+                  "diseno": "reno", "x": 50, "y": 30, "tamano": 100},
+     "cantidad": 2}
 """
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from .models import Color, Producto
+from .models import Color, Producto, Variante
 
 CANTIDAD_MAXIMA = 50  # límite por línea, para evitar errores de captura
+
+# Personalizador de calcetas: límites que el servidor hace cumplir.
+CALCETA_POSICION = (0, 100)   # porcentaje dentro del área donde se puede colocar el diseño
+CALCETA_TAMANO = (50, 150)    # porcentaje del tamaño base del diseño
+TALLAS_CALCETA = ["2-4", "6-8", "10-12", "UNI"]
 
 
 class ErrorCotizacion(ValueError):
@@ -98,6 +110,8 @@ def cotizar(datos: dict) -> Cotizacion:
 
     cantidad = _leer_cantidad(datos.get("cantidad", 1))
 
+    if producto.es_calceta:
+        return _cotizar_calceta(producto, datos.get("opciones") or {}, cantidad)
     if producto.personalizable:
         return _cotizar_personalizable(producto, datos.get("opciones") or {}, cantidad)
     return _cotizar_catalogo(producto, datos.get("variante"), cantidad)
@@ -182,4 +196,76 @@ def _cotizar_personalizable(producto, opciones, cantidad) -> Cotizacion:
             Concepto(f"Decorado estampado: {estampado.nombre}", estampado.precio_extra)
         )
 
+    return cot
+
+
+
+def _entero_en_rango(valor, rango, nombre):
+    """Convierte a entero y revisa que esté dentro del rango permitido."""
+    minimo, maximo = rango
+    if isinstance(valor, bool):
+        raise ErrorCotizacion(f"{nombre} no es válido.")
+    try:
+        numero = int(valor)
+    except (TypeError, ValueError):
+        raise ErrorCotizacion(f"{nombre} no es válido.")
+    if not minimo <= numero <= maximo:
+        raise ErrorCotizacion(f"{nombre} debe estar entre {minimo} y {maximo}.")
+    return numero
+
+
+def _cotizar_calceta(producto, opciones, cantidad) -> Cotizacion:
+    """Calceta personalizada: color de cada parte, talla y un diseño con posición y tamaño."""
+    if not isinstance(opciones, dict):
+        raise ErrorCotizacion("Las opciones de la calceta no son válidas.")
+
+    cot = Cotizacion(
+        producto=producto,
+        cantidad=cantidad,
+        dias_elaboracion=producto.dias_elaboracion,
+    )
+    cot.conceptos.append(Concepto(f"{producto.nombre} (precio base)", producto.precio_base))
+
+    # 1) Color de cada parte (la calceta y sus detalles), igual que en el moño.
+    claves_validas = {"talla", "diseno", "x", "y", "tamano"}
+    for parte in producto.partes.prefetch_related("colores"):
+        claves_validas.add(parte.clave)
+        color_id = opciones.get(parte.clave)
+        if color_id in (None, ""):
+            raise ErrorCotizacion(f"Elige un color para {parte.nombre.lower()}.")
+        try:
+            color = parte.colores.get(pk=int(color_id), activo=True)
+        except (ValueError, TypeError, Color.DoesNotExist):
+            raise ErrorCotizacion(
+                f"El color elegido no está disponible para {parte.nombre.lower()}."
+            )
+        cot.seleccion[parte.nombre] = color.nombre
+
+    # 2) Cualquier opción inventada (por ejemplo "precio") se rechaza.
+    desconocidas = set(opciones) - claves_validas
+    if desconocidas:
+        raise ErrorCotizacion(f"Opciones no reconocidas: {', '.join(sorted(desconocidas))}.")
+
+    # 3) Talla.
+    talla = opciones.get("talla")
+    if not isinstance(talla, str) or talla not in TALLAS_CALCETA:
+        raise ErrorCotizacion("Elige una talla.")
+    cot.seleccion["Talla"] = dict(Variante.TALLAS)[talla]
+
+    # 4) Diseño opcional, con posición y tamaño dentro de los límites.
+    clave = opciones.get("diseno") or ""
+    if not clave:
+        cot.seleccion["Diseño"] = "Sin diseño"
+        return cot
+    diseno = producto.disenos_calceta.filter(clave=str(clave), activo=True).first()
+    if diseno is None:
+        raise ErrorCotizacion("El diseño elegido no está disponible.")
+    x = _entero_en_rango(opciones.get("x", 50), CALCETA_POSICION, "La posición horizontal")
+    y = _entero_en_rango(opciones.get("y", 50), CALCETA_POSICION, "La posición vertical")
+    tamano = _entero_en_rango(opciones.get("tamano", 100), CALCETA_TAMANO, "El tamaño")
+    cot.seleccion["Diseño"] = diseno.nombre
+    cot.seleccion["Posición"] = f"{x} % horizontal, {y} % vertical"
+    cot.seleccion["Tamaño"] = f"{tamano} %"
+    if diseno.precio_extra:
+        cot.conceptos.append(Concepto(f"Diseño: {diseno.nombre}", diseno.precio_extra))
     return cot

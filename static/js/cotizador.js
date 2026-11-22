@@ -44,7 +44,9 @@
     const colores = {};
     for (const [clave, valor] of datos.entries()) {
       if (NO_SON_OPCIONES.includes(clave)) continue;
-      payload.opciones[clave] = Number(valor);
+      // Los colores y la posición son números; la talla y el diseño son texto.
+      const numero = Number(valor);
+      payload.opciones[clave] = valor !== "" && Number.isFinite(numero) ? numero : valor;
       const radio = form.querySelector(`input[name="${clave}"]:checked`);
       colores[clave] = radio ? radio.dataset.hex : null;
     }

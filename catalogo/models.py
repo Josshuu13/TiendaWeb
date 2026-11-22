@@ -108,6 +108,13 @@ class Producto(models.Model):
         default=False,
         help_text="Si está marcado, se vende desde el simulador (sin variantes).",
     )
+    # Qué personalizador usa un producto personalizable.
+    MONO, CALCETA = "mono", "calceta"
+    TIPOS_PERSONALIZACION = [(MONO, "Moño por capas"), (CALCETA, "Calceta con diseño")]
+    tipo_personalizacion = models.CharField(
+        "tipo de personalización", max_length=10, choices=TIPOS_PERSONALIZACION, default=MONO,
+        help_text="Solo aplica si el producto es personalizable.",
+    )
     imagen = models.ImageField(upload_to="productos/", blank=True)
     # Sección de la página de su categoría. Hoy solo la usan los moños listos para usar.
     NAVIDENO, UNIFORME, DECORADO = "navideno", "uniforme", "decorado"
@@ -149,6 +156,11 @@ class Producto(models.Model):
         if self.precio_anterior and self.precio_anterior > self.precio_base:
             return self.precio_anterior - self.precio_base
         return 0
+
+    @property
+    def es_calceta(self):
+        """¿Se vende desde el personalizador de calcetas?"""
+        return self.personalizable and self.tipo_personalizacion == self.CALCETA
 
     @property
     def es_kit(self):
@@ -520,3 +532,46 @@ class Temporada(models.Model):
             return self.imagen.url
         ruta = f"img/temporadas/{self.slug}.webp"
         return static(ruta) if finders.find(ruta) else ""
+
+
+
+class DisenoCalceta(models.Model):
+    """
+    Diseño predefinido del personalizador de calcetas: reno, pino, copo de nieve...
+
+    El cliente lo coloca sobre la calceta y elige su posición y su tamaño. Si un material
+    se agota, el diseño se desactiva sin borrarlo.
+    """
+
+    productos = models.ManyToManyField(
+        Producto,
+        related_name="disenos_calceta",
+        limit_choices_to={"personalizable": True, "tipo_personalizacion": "calceta"},
+    )
+    nombre = models.CharField(max_length=60)  # "Reno"
+    clave = models.SlugField(max_length=40, unique=True)  # "reno"
+    imagen = models.ImageField(
+        upload_to="disenos_calceta/", blank=True,
+        help_text="PNG con fondo transparente. Si se deja vacío, se usa "
+                  "static/simulador/calceta/disenos/<clave>.svg.",
+    )
+    precio_extra = models.DecimalField(
+        max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)]
+    )
+    activo = models.BooleanField(default=True)
+    orden = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["orden", "nombre"]
+        verbose_name = "diseño de calceta"
+        verbose_name_plural = "diseños de calceta"
+
+    def __str__(self):
+        return self.nombre
+
+    @property
+    def url_imagen(self):
+        """Imagen subida en el admin o, si no hay, el dibujo estático."""
+        if self.imagen:
+            return self.imagen.url
+        return static(f"simulador/calceta/disenos/{self.clave}.svg")
