@@ -22,7 +22,8 @@
 
 <div class="producto-grid">
   <!-- ===================== Columna izquierda: simulador o foto ===================== -->
-  <div>
+  <!-- Con foto, la columna se estira para medir lo mismo que la de la derecha (col-foto) -->
+  <div{% if not producto.personalizable %} class="col-foto"{% endif %}>
     {% if producto.personalizable %}
       <!-- La columna se queda fija al bajar por las opciones (sticky), para ver
            siempre el moño mientras se eligen colores -->
@@ -70,7 +71,33 @@
       {% if producto.precio_anterior %}<s>{{ producto.precio_anterior|pesos }}</s>{% endif %}
       {% if producto.personalizable %}Desde {% endif %}{{ producto.precio_base|pesos }}
     </p>
-    <p class="descripcion">{{ producto.descripcion }}</p>
+    <!-- Aviso de envío desde el principio, para que no sea sorpresa en el carrito -->
+    <p class="aviso-envio">
+      <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#camion"/></svg>
+      Envío a todo México {{ tienda.costo_envio|pesos }}{% if tienda.envio_gratis_desde %} ·
+      <b>Gratis desde {{ tienda.envio_gratis_desde|pesos }}</b>{% endif %}
+    </p>
+    {% if producto.descripcion %}<p class="descripcion">{{ producto.descripcion }}</p>{% endif %}
+
+    {% if piezas_kit %}
+      <!-- Qué incluye el kit: cada pieza con su foto, su precio y un enlace a su página -->
+      <div class="incluye">
+        <div class="opcion-lbl">Incluye</div>
+        {% for pieza in piezas_kit %}
+          {% with p=pieza.producto %}
+          <a class="incluye-item" href="{{ p.get_absolute_url }}">
+            <span class="incluye-img">{% include "catalogo/_imagen.html" with producto=p %}</span>
+            <span>
+              <b>{{ p.nombre }}</b>
+              <small>{% if p.categoria.slug == "sueteres" %}Eliges la talla abajo{% elif p.categoria.slug == "monos" %}Listo para usar{% else %}Unitalla{% endif %}</small>
+            </span>
+            <em>{{ p.precio_base|pesos }}</em>
+          </a>
+          {% endwith %}
+        {% endfor %}
+        <div class="incluye-total"><span>Por separado</span><s>{{ producto.precio_por_separado|pesos }}</s></div>
+      </div>
+    {% endif %}
 
     <form id="form-cotizar" data-producto="{{ producto.slug }}"
           data-url="{% url 'catalogo:api_cotizar' %}" novalidate>
@@ -229,12 +256,12 @@
         <input type="hidden" name="variante" id="variante" value="">
         {{ config_variantes|json_script:"config-variantes" }}
 
-        <div class="opcion" id="opcion-color" hidden>
+        <div class="opcion" id="opcion-color" hidden{% if piezas_kit %} data-ocultar{% endif %}>
           <div class="opcion-lbl">Color: <span id="color-nombre"></span></div>
           <div class="fila" id="colores"></div>
         </div>
         <div class="opcion" id="opcion-talla" hidden>
-          <div class="opcion-lbl">Talla: <span id="talla-nombre"></span></div>
+          <div class="opcion-lbl">{% if piezas_kit %}Talla del suéter{% else %}Talla{% endif %}: <span id="talla-nombre"></span></div>
           <div class="fila" id="tallas"></div>
           {% if producto.categoria.guia_tallas %}
             <details class="guia-tallas">

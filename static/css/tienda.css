@@ -238,6 +238,14 @@ s { color: var(--suave); }
 
 /* ===== Motivos para comprar ===== */
 .motivos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+/* Portada: un solo renglón de 4 productos (2 en tableta y celular) */
+.productos.renglon { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 960px) { .productos.renglon { grid-template-columns: 1fr 1fr; } }
+/* Página de temporada: 5 por renglón en pantallas grandes */
+/* Catálogo general: botón centrado debajo de cada categoría */
+.ver-categoria { margin-top: 22px; text-align: center; }
+@media (min-width: 1100px) { .productos.cinco { grid-template-columns: repeat(5, 1fr); gap: 14px; } }
 .motivo { padding: 24px; border-radius: var(--radio-l); background: var(--superficie); box-shadow: var(--sombra); }
 .motivo .icono { width: 30px; height: 30px; margin-bottom: 12px; color: var(--acento); }
 .motivo h3 { margin-bottom: 6px; font-size: 19px; }
@@ -299,11 +307,11 @@ section.seccion[id] { scroll-margin-top: 130px; }   /* que el título no quede t
   .disena-fondo img { height: 250px; }
   .disena-mono .btn { width: 100%; }
   /* Diseños listos: 2 por renglón en celular */
-  .productos.listos { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .productos.listos .prod-img { height: 190px; padding: 12px; }
-  .productos.listos .prod-img > img { max-height: 165px; }
-  .productos.listos .prod-cuerpo { padding: 0 12px 14px; }
-  .productos.listos h3 { font-size: 15px; }
+  .productos.listos, .productos.renglon { grid-template-columns: 1fr 1fr; gap: 12px; }
+  :is(.listos, .renglon) .prod-img { height: 190px; padding: 12px; }
+  :is(.listos, .renglon) .prod-img > img { max-height: 165px; }
+  :is(.listos, .renglon) .prod-cuerpo { padding: 0 12px 14px; }
+  :is(.listos, .renglon) h3 { font-size: 15px; }
 }
 .filtro {
   display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 14px;
@@ -489,7 +497,8 @@ section.seccion[id] { scroll-margin-top: 130px; }   /* que el título no quede t
 .linea-detalle { margin: 0 0 8px; padding: 0; list-style: none; color: var(--suave); font-size: 14px; }
 .linea-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .linea-acciones { display: flex; align-items: center; gap: 14px; }
-.linea-importe { font-weight: 600; }
+.linea-importe { display: grid; justify-items: end; font-weight: 600; }
+.linea-importe small { color: var(--suave); font-size: 12px; font-weight: 400; }   /* precio por pieza */
 .panel { padding: 24px; border-radius: var(--radio-l); background: var(--superficie); box-shadow: var(--sombra); }
 .panel + .panel { margin-top: 16px; }
 .panel h2 { font-size: 21px; }
@@ -598,7 +607,16 @@ details.plegable form { margin-top: 12px; }
   .producto-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 40px; }
   .compra-grid { grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; }
   .panel-fijo { position: sticky; top: calc(var(--barra) + 16px); }
-  .simulador-fijo, .galeria-fija { position: sticky; top: calc(var(--barra) + 16px); }
+  .simulador-fijo { position: sticky; top: calc(var(--barra) + 16px); }
+  /* Productos con foto: la foto no se mueve al bajar y es tan alta como la columna de
+     la derecha (llega hasta el total de la cotización), con un mínimo y un máximo. */
+  /* La foto se pone "encima" de su columna (position: absolute) para que no la estire:
+     así la altura la decide la columna de la derecha y la foto la ocupa completa. */
+  .col-foto { position: relative; min-height: 520px; }
+  .col-foto .galeria-fija { position: absolute; inset: 0 0 auto; height: 100%; max-height: 620px; }
+  /* Tope de 620 px: en suéteres y calcetines la columna derecha es muy larga (tallas)
+     y una foto más alta dejaba mucho espacio vacío y el producto se veía hasta abajo. */
+  .col-foto .galeria { height: 100%; min-height: 0; }
   .simulador-visor { height: min(calc(100vh - 210px), 640px); }
 }
 
@@ -610,3 +628,32 @@ details.plegable form { margin-top: 12px; }
 @media print {
   .barra, .aviso, .pie, .btn { display: none; }
 }
+
+/* Envío: aviso en el producto y avance hacia el envío gratis en el carrito */
+.aviso-envio { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -4px 0 12px; color: var(--suave); font-size: 14px; }
+.aviso-envio .icono { width: 18px; height: 18px; }
+.aviso-envio b { color: #1f7a3a; font-weight: 600; }
+.texto-gratis { color: #1f7a3a; font-weight: 600; }
+.envio-gratis { margin: 4px 0 14px; padding: 12px; border-radius: var(--radio-m); background: #fbe9ec; font-size: 14px; }
+.envio-gratis p { margin: 0 0 8px; }
+.envio-gratis-barra { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(0, 0, 0, .08); }
+.envio-gratis-barra span { display: block; height: 100%; border-radius: inherit; background: var(--acento); transition: width .3s; }
+.envio-gratis.logrado { background: #e8f5ec; color: #1f7a3a; }
+.envio-logrado { display: flex; align-items: center; gap: 6px; }
+.envio-logrado .icono { width: 18px; height: 18px; stroke-width: 2.4; }
+.envio-gratis.logrado .envio-gratis-barra span { background: #1f7a3a; }
+
+/* Kits: caja "Incluye" con las piezas y el precio por separado */
+.incluye { margin: 4px 0 18px; padding: 14px; border-radius: var(--radio-m); background: var(--superficie); box-shadow: var(--sombra); }
+.incluye-item {
+  display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 12px;
+  padding: 8px 4px; border-bottom: 1px solid var(--linea); color: var(--tinta);
+}
+.incluye-item:hover { text-decoration: none; background: #fafafa; }
+.incluye-img { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: 10px; background: #f5f5f7; }
+.incluye-img img, .incluye-img .dibujo { max-width: 52px; max-height: 52px; object-fit: contain; }
+.incluye-item b { display: block; font-size: 14px; font-weight: 600; }
+.incluye-item small { color: var(--suave); font-size: 12px; }
+.incluye-item em { color: var(--suave); font-size: 14px; font-style: normal; }
+.incluye-total { display: flex; justify-content: space-between; padding: 8px 4px 0; color: var(--suave); font-size: 14px; }
+.incluye-mini { margin-bottom: 2px; color: var(--suave); font-size: 12px; }

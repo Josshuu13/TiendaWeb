@@ -55,7 +55,7 @@ def test_combinaciones_tienen_las_seis_partes_y_se_pueden_cotizar():
         datos = combo.como_dict()
         assert set(datos["colores"]) == set(PARTES)
         cot = cotizar({"producto": "mono-clasico", "opciones": datos["colores"], "cantidad": 1})
-        assert cot.precio_unitario == Decimal("85.00")
+        assert cot.precio_unitario == Decimal("70.00")
 
 
 def test_solo_el_decorado_admite_estampado():
@@ -87,7 +87,7 @@ def test_paleta_tiene_colores_escolares_y_navidenos():
 
 def test_mono_liso_cuesta_el_precio_base():
     cot = cotizar(mono(baseabajo=color("Blanco"), nudo=color("Verde pino")))
-    assert cot.precio_unitario == Decimal("85.00")
+    assert cot.precio_unitario == Decimal("70.00")
     assert cot.seleccion["Base inferior"] == "Blanco"
     assert cot.seleccion["Nudo"] == "Verde pino"
 
@@ -96,8 +96,8 @@ def test_estampado_suma_precio_y_reemplaza_color_del_decorado():
     datos = mono(cantidad=2, estampado="tejido-rojo")
     del datos["opciones"]["decorado"]  # con estampado, el decorado no necesita color
     cot = cotizar(datos)
-    assert cot.precio_unitario == Decimal("100.00")  # 85 + 15
-    assert cot.total == Decimal("200.00")
+    assert cot.precio_unitario == Decimal("85.00")  # 70 + 15
+    assert cot.total == Decimal("170.00")
     assert cot.seleccion["Decorado"] == "Estampado: Tejido rojo"
 
 
@@ -171,7 +171,10 @@ def test_cargar_datos_demo_se_puede_repetir():
     assert Parte.objects.filter(producto__slug="mono-clasico").count() == 6
     from catalogo.management.commands.cargar_datos_demo import ESTAMPADOS
     assert Estampado.objects.count() == len(ESTAMPADOS)
-    assert Producto.objects.filter(categoria__slug="kits").count() == 4
+    from catalogo.management.commands.cargar_datos_demo import KITS
+    kits = Producto.objects.filter(categoria__slug="kits", activo=True)
+    assert kits.count() == len(KITS)
+    assert all(k.piezas.count() == (3 if k.slug != "kit-mini" else 2) for k in kits)
 
 
 # --- API y páginas ---
@@ -180,14 +183,14 @@ def test_api_devuelve_desglose(client):
     datos = mono(estampado="rombos-verde")
     r = client.post(reverse("catalogo:api_cotizar"), json.dumps(datos), content_type="application/json")
     assert r.status_code == 200
-    assert r.json()["total"] == "100.00"  # 85 + 15 del estampado
+    assert r.json()["total"] == "85.00"  # 70 + 15 del estampado
 
 
 def test_api_ignora_precio_enviado_por_el_cliente(client):
     datos = mono()
     datos["total"] = "1.00"
     r = client.post(reverse("catalogo:api_cotizar"), json.dumps(datos), content_type="application/json")
-    assert r.json()["total"] == "85.00"
+    assert r.json()["total"] == "70.00"
 
 
 def test_api_error_es_400(client):
@@ -211,7 +214,7 @@ def test_pagina_del_mono_incluye_simulador(client):
     ("catalogo:categoria", ["sueteres"]),
     ("catalogo:producto", ["mono-clasico"]),
     ("catalogo:producto", ["calcetines-santa-claus"]),
-    ("catalogo:producto", ["kit-reno-rojo"]),
+    ("catalogo:producto", ["kit-santa"]),
     ("catalogo:categoria", ["kits"]),
     ("catalogo:ayuda", []),
 ])
@@ -242,7 +245,7 @@ def test_dos_colores_reparte_las_partes_como_se_acordo():
 def test_cotizar_diseno_listo():
     v = Variante.objects.get(producto__slug="mono-rojo-con-azul-marino")
     cot = cotizar({"producto": "mono-rojo-con-azul-marino", "variante": v.sku, "cantidad": 2})
-    assert cot.total == Decimal("170.00")
+    assert cot.total == Decimal("120.00")   # 2 × $60 (uniforme)
 
 
 def test_pagina_de_monos_tiene_disena_el_tuyo_y_disenos_listos(client):
@@ -351,7 +354,7 @@ def test_cotizar_estampado_de_color_guarda_el_nombre_completo():
     datos = mono(estampado="mariposas-lila")
     del datos["opciones"]["decorado"]
     cot = cotizar(datos)
-    assert cot.precio_unitario == Decimal("100.00")
+    assert cot.precio_unitario == Decimal("85.00")
     assert cot.seleccion["Decorado"] == "Estampado: Mariposas lila"
 
 
@@ -392,5 +395,12 @@ def test_diseno_de_un_solo_color_no_muestra_circulitos(client):
 
 def test_decorado_liso_no_cobra_estampado():
     cot = cotizar(mono())
-    assert cot.precio_unitario == Decimal("85.00")
+    assert cot.precio_unitario == Decimal("70.00")
     assert not any("estampado" in c.descripcion.lower() for c in cot.conceptos)
+
+
+def test_precios_de_monos_listos_por_seccion():
+    # Uniforme $60 (lisos); navideños y con decorado $75 (llevan estampado).
+    precios = dict(Producto.objects.exclude(coleccion="").values_list("coleccion", "precio_base"))
+    assert precios[Producto.UNIFORME] == Decimal("60.00")
+    assert precios[Producto.NAVIDENO] == precios[Producto.DECORADO] == Decimal("75.00")

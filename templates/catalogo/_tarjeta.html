@@ -13,6 +13,10 @@
         <div class="puntos">{% for c in colores %}<i style="background: {{ c.codigo_hex }}" title="{{ c.nombre }}"></i>{% endfor %}</div>
       {% endif %}
     {% endwith %}
+    {% if producto.categoria.slug == 'kits' %}
+      <!-- Qué trae el kit, en corto: "Suéter + calcetines + moño" -->
+      <div class="incluye-mini">{% for pieza in producto.piezas.all %}{% if not forloop.first %} + {% endif %}{% if pieza.producto.categoria.slug == "sueteres" %}{% if forloop.first %}Suéter{% else %}suéter{% endif %}{% elif pieza.producto.categoria.slug == "calcetines" %}{% if forloop.first %}Calcetines{% else %}calcetines{% endif %}{% else %}{% if forloop.first %}Moño{% else %}moño{% endif %}{% endif %}{% endfor %}</div>
+    {% endif %}
     <h3>{{ producto.nombre }}</h3>
     <div class="prod-precio">
       {% if producto.precio_anterior %}<s>{{ producto.precio_anterior|pesos }}</s>{% endif %}

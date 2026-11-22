@@ -32,6 +32,7 @@
     <h2>Envíos y entregas</h2>
     <ul>
       <li>Enviamos a todo México con una tarifa fija de {{ tienda.costo_envio|pesos }}.</li>
+      {% if tienda.envio_gratis_desde %}<li><b>Envío gratis</b> en compras desde {{ tienda.envio_gratis_desde|pesos }} (sin contar el envío).</li>{% endif %}
       <li>La fecha de entrega se calcula con los días de elaboración del producto más {{ dias_envio }} días hábiles de envío.
           Te la mostramos antes de pagar.</li>
       <li>Si tu pedido tiene varios productos, la fecha la marca el que tarda más en estar listo.</li>

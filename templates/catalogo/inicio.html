@@ -59,7 +59,8 @@
         <h2 class="titulo-seccion">Esta temporada. <span>{{ temporada.nombre }}.</span></h2>
         <a href="{{ temporada.get_absolute_url }}">Ver todos</a>
       </div>
-      <div class="estante" tabindex="0" role="region" aria-label="Productos de la temporada">
+      <!-- Un renglón de 4: uno de cada categoría de la temporada -->
+      <div class="productos renglon">
         {% for producto in de_temporada %}{% include "catalogo/_tarjeta.html" %}{% endfor %}
       </div>
     </section>
@@ -72,7 +73,7 @@
         <h2 class="titulo-seccion">Destacados. <span>Lo que nos gusta ahora.</span></h2>
         <a href="{% url 'catalogo:lista' %}">Ver catálogo</a>
       </div>
-      <div class="productos">
+      <div class="productos renglon">
         {% for producto in destacados %}{% include "catalogo/_tarjeta.html" %}{% endfor %}
       </div>
     </section>
@@ -80,7 +81,7 @@
 
   <!-- ===== Así de fácil ===== -->
   <section class="seccion">
-    <h2 class="titulo-seccion">Así de fácil. <span>Tres pasos y listo.</span></h2>
+    <h2 class="titulo-seccion">Así de fácil. <span>Cuatro pasos y listo.</span></h2>
     <div class="motivos">
       <div class="motivo">
         <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pincel"/></svg>
@@ -93,6 +94,10 @@
       <div class="motivo">
         <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#camion"/></svg>
         <h3>Sigue tu entrega</h3><p>Ve tu pedido paso a paso, con transportista y número de guía.</p>
+      </div>
+      <div class="motivo">
+        <svg class="icono" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#paquete"/></svg>
+        <h3>Envío gratis</h3><p>En compras desde {{ envio_gratis_desde|pesos }}, a domicilio en todo México.</p>
       </div>
     </div>
   </section>

@@ -81,6 +81,7 @@ class Resumen:
 
     lineas: list = field(default_factory=list)
     costo_envio: Decimal = Decimal("0")
+    envio_gratis_desde: Decimal = Decimal("0")   # 0 = no hay envío gratis
 
     @property
     def validas(self) -> list:
@@ -95,8 +96,29 @@ class Resumen:
         return sum((linea.cotizacion.total for linea in self.validas), Decimal("0"))
 
     @property
+    def envio_gratis(self) -> bool:
+        """El subtotal ya alcanzó el monto de envío gratis."""
+        return bool(self.envio_gratis_desde) and self.subtotal >= self.envio_gratis_desde
+
+    @property
     def envio(self) -> Decimal:
-        return self.costo_envio if self.validas else Decimal("0")
+        if not self.validas or self.envio_gratis:
+            return Decimal("0")
+        return self.costo_envio
+
+    @property
+    def falta_para_envio_gratis(self) -> Decimal:
+        """Cuánto le falta al subtotal para tener envío gratis (0 si ya lo tiene o no aplica)."""
+        if not self.envio_gratis_desde or self.envio_gratis:
+            return Decimal("0")
+        return self.envio_gratis_desde - self.subtotal
+
+    @property
+    def avance_envio_gratis(self) -> int:
+        """Porcentaje (0 a 100) del camino al envío gratis, para la barra del carrito."""
+        if not self.envio_gratis_desde:
+            return 0
+        return min(100, int(self.subtotal * 100 / self.envio_gratis_desde))
 
     @property
     def total(self) -> Decimal:
@@ -170,7 +192,7 @@ class Carrito:
         self.lineas = []
         self._guardar()
 
-    def resumen(self, costo_envio=Decimal("0")) -> Resumen:
+    def resumen(self, costo_envio=Decimal("0"), envio_gratis_desde=Decimal("0")) -> Resumen:
         """Vuelve a cotizar cada renglón con los precios y existencias actuales."""
         lineas = []
         for datos in self.lineas:
@@ -180,4 +202,4 @@ class Carrito:
             except ErrorCotizacion as e:
                 linea.error = str(e)
             lineas.append(linea)
-        return Resumen(lineas=lineas, costo_envio=costo_envio)
+        return Resumen(lineas=lineas, costo_envio=costo_envio, envio_gratis_desde=envio_gratis_desde)

@@ -37,11 +37,27 @@ def _productos_activos():
     )
 
 
+SLUG_KITS = "kits"   # categoría de los kits navideños
+
 # Grupos de tallas para los filtros de la lista.
 GRUPOS_TALLA = {
     "nina": ("Niña", ["2-4", "6-8", "10-12"]),
     "adulto": ("Adulto", ["CH", "M", "G", "EG"]),
 }
+
+
+def _uno_por_categoria(productos, limite):
+    """Escoge productos alternando categorías (uno de cada una, luego otra vuelta...)
+    hasta juntar 'limite'. Así la portada muestra variedad y no 6 suéteres seguidos."""
+    grupos = {}
+    for p in productos:
+        grupos.setdefault(p.categoria_id, []).append(p)
+    elegidos = []
+    while len(elegidos) < limite and any(grupos.values()):
+        for lista_cat in grupos.values():
+            if lista_cat and len(elegidos) < limite:
+                elegidos.append(lista_cat.pop(0))
+    return elegidos
 
 
 def inicio(request):
@@ -50,9 +66,10 @@ def inicio(request):
     Todo sale de la base de datos: al crear una categoría, un producto o una temporada
     en el admin, la portada se actualiza sin tocar el código.
     """
+    from pedidos.models import ConfiguracionTienda  # import local: evita importar pedidos al cargar catalogo
+
     productos = _productos_activos()
     temporada = Temporada.actual()
-    de_temporada = productos.filter(temporadas=temporada) if temporada else productos.none()
     categorias = []
     for cat in Categoria.objects.all():
         de_cat = [p for p in productos if p.categoria_id == cat.pk]
@@ -65,17 +82,73 @@ def inicio(request):
             "muestra": muestra,
             "desde": min(p.precio_base for p in de_cat),
         })
+
+    # "Esta temporada": una probadita de 4, uno por categoría. Primero los que NO son
+    # destacados, para que no se repitan con la sección de Destacados de abajo.
+    de_temporada = []
+    if temporada:
+        de_temporada = _uno_por_categoria(
+            sorted(productos.filter(temporadas=temporada), key=lambda p: p.destacado), 4)
+
     contexto = {
         "categorias": categorias,
         "temporada": temporada,
         "de_temporada": de_temporada,
-        "destacados": productos.filter(destacado=True).exclude(pk__in=de_temporada.values("pk"))[:6],
+        # Destacados: los que se marcaron en el admin, sin repetir los de arriba. Máximo 4 (un renglón).
+        "destacados": productos.filter(destacado=True).exclude(pk__in=[p.pk for p in de_temporada])[:4],
+        "envio_gratis_desde": ConfiguracionTienda.cargar().envio_gratis_desde,
     }
     return render(request, "catalogo/inicio.html", contexto)
 
 
+def _vitrina(de_cat, limite=5):
+    """Los primeros productos que se ven de una categoría en el catálogo general.
+
+    - Kits: los completos primero (más caros) y el Mini al final.
+    - Categoría con personalizable (Moños): el personalizable primero y luego
+      se alternan las colecciones (navideño, uniforme, con decorado...) para que haya variedad.
+    - Las demás: en su orden normal.
+    """
+    if any(p.categoria.slug == SLUG_KITS for p in de_cat):
+        return sorted(de_cat, key=lambda p: (-p.precio_base, p.nombre))[:limite]
+    personalizables = [p for p in de_cat if p.personalizable]
+    if personalizables:
+        listos = sorted((p for p in de_cat if not p.personalizable), key=lambda p: (p.creado, p.pk))
+        orden = [c for c, _ in Producto.COLECCIONES] + [""]
+        por_coleccion = sorted(listos, key=lambda p: orden.index(p.coleccion) if p.coleccion in orden else len(orden))
+        return (personalizables[:1] + _uno_por_coleccion(por_coleccion, limite - 1))[:limite]
+    return de_cat[:limite]
+
+
+def _uno_por_coleccion(productos, limite):
+    """Como _uno_por_categoria, pero alternando la colección del moño."""
+    grupos = {}
+    for p in productos:
+        grupos.setdefault(p.coleccion, []).append(p)
+    elegidos = []
+    while len(elegidos) < limite and any(grupos.values()):
+        for lista_col in grupos.values():
+            if lista_col and len(elegidos) < limite:
+                elegidos.append(lista_col.pop(0))
+    return elegidos
+
+
+def catalogo(request):
+    """Catálogo general (/catalogo/): un escaparate con un renglón de cada categoría
+    y un botón para ver todos los productos de esa categoría."""
+    productos = list(_productos_activos().select_related("categoria"))
+    grupos = []
+    for cat in Categoria.objects.all():
+        de_cat = [p for p in productos if p.categoria_id == cat.pk]
+        if de_cat:
+            grupos.append({"categoria": cat, "productos": _vitrina(de_cat), "total": len(de_cat)})
+    return render(request, "catalogo/catalogo.html", {"grupos": grupos})
+
+
 def lista(request, slug=None):
     """Lista de productos. Filtros opcionales en la URL: ?talla=nina|adulto&color=<id>."""
+    if slug is None:
+        return catalogo(request)   # sin categoría: el escaparate general
     categoria = None
     productos = _productos_activos()
     if slug:
@@ -93,8 +166,10 @@ def lista(request, slug=None):
     filtros_color = list(
         Color.objects.filter(pk__in=variantes.values("color")).order_by("orden")
     )
-    if len(filtros_color) < 2:   # con un solo color no hace falta filtrar
+    if len(filtros_color) < 2 or slug == SLUG_KITS:   # en kits el color no ayuda a elegir
         filtros_color = []
+    if slug == SLUG_KITS:   # los kits completos primero y el Kit Mini al final
+        productos = productos.order_by("-precio_base", "nombre")
 
     # Categorías con un producto personalizable (Moños): arriba va la sección
     # "Diseña el tuyo" con ese producto, y abajo los diseños listos para usar.
@@ -141,11 +216,19 @@ def lista(request, slug=None):
 
 
 def temporada(request, slug):
-    """Todos los productos de una temporada activa."""
+    """Todos los productos de una temporada activa, agrupados por categoría
+    (Moños, Suéteres, Calcetines, Kits...) en el orden de las categorías."""
     coleccion = get_object_or_404(Temporada, slug=slug, activa=True)
+    productos = _productos_activos().filter(temporadas=coleccion)
+    grupos = []
+    for cat in Categoria.objects.all():
+        de_cat = [p for p in productos if p.categoria_id == cat.pk]
+        if de_cat:
+            grupos.append({"categoria": cat, "productos": de_cat})
     return render(request, "catalogo/temporada.html", {
         "coleccion": coleccion,
-        "productos": _productos_activos().filter(temporadas=coleccion),
+        "productos": productos,
+        "grupos": grupos,
     })
 
 
@@ -338,6 +421,8 @@ def detalle(request, slug):
             "estampados": {e.clave: e.url_imagen for e in estampados},
         }
     else:
+        # Kits: sus piezas, para la caja "Incluye" (suéter, calcetines, moño).
+        contexto["piezas_kit"] = list(producto.piezas.select_related("producto__categoria"))
         # Datos para producto.js: colores y variantes (talla, color, existencias).
         variantes = list(producto.variantes.all())
         contexto["config_variantes"] = {

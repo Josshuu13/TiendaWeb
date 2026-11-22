@@ -17,8 +17,9 @@ from .carrito import Carrito
 
 
 def _contexto(request, carrito, aviso=""):
-    costo_envio = ConfiguracionTienda.cargar().costo_envio
-    return {"resumen": carrito.resumen(costo_envio), "aviso": aviso}
+    tienda = ConfiguracionTienda.cargar()
+    resumen = carrito.resumen(tienda.costo_envio, tienda.envio_gratis_desde)
+    return {"resumen": resumen, "aviso": aviso}
 
 
 def _responder(request, carrito, aviso=""):

@@ -151,6 +151,16 @@ class Producto(models.Model):
         return 0
 
     @property
+    def es_kit(self):
+        """¿Es un kit armado con otros productos de la tienda?"""
+        return self.piezas.exists()
+
+    @property
+    def precio_por_separado(self):
+        """Suma de los precios de las piezas del kit (0 si no es kit)."""
+        return sum((p.producto.precio_base for p in self.piezas.select_related("producto")), 0)
+
+    @property
     def colores_disponibles(self):
         """Colores distintos de sus variantes activas (para los puntitos y el selector)."""
         vistos, colores = set(), []
@@ -179,6 +189,27 @@ class Producto(models.Model):
     def carpeta_simulador(self):
         """Carpeta de archivos estáticos con las capas del simulador de este producto."""
         return f"simulador/{self.slug}/"
+
+
+class PiezaKit(models.Model):
+    """Un producto que forma parte de un kit (por ejemplo, el suéter del Kit Santa).
+
+    El kit es un producto más (categoría Kits navideños) con su propio precio de
+    paquete; sus piezas sirven para mostrar qué incluye y calcular cuánto se ahorra.
+    """
+
+    kit = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="piezas")
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, related_name="en_kits")
+    orden = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["orden", "pk"]
+        verbose_name = "pieza del kit"
+        verbose_name_plural = "piezas del kit"
+        constraints = [models.UniqueConstraint(fields=["kit", "producto"], name="pieza_unica_por_kit")]
+
+    def __str__(self):
+        return f"{self.kit.nombre}: {self.producto.nombre}"
 
 
 class Variante(models.Model):
