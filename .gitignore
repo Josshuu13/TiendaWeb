@@ -21,3 +21,9 @@ staticfiles/
 .DS_Store
 Thumbs.db
 db_respaldo.sqlite3
+
+# Imágenes intermedias que generan los scripts del documento y la presentación
+docs/entrega/diagramas/_*.png
+
+# Archivos temporales de Word y PowerPoint mientras un documento está abierto
+~$*

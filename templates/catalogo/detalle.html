@@ -24,7 +24,9 @@
   <!-- ===================== Columna izquierda: simulador o foto ===================== -->
   <!-- Con foto, la columna se estira para medir lo mismo que la de la derecha (col-foto) -->
   <div{% if not producto.personalizable %} class="col-foto"{% endif %}>
-    {% if producto.personalizable %}
+    {% if producto.es_calceta %}
+      {% include "catalogo/_visor_calceta.html" %}
+    {% elif producto.personalizable %}
       <!-- La columna se queda fija al bajar por las opciones (sticky), para ver
            siempre el moño mientras se eligen colores -->
       <div class="simulador-fijo">
@@ -103,7 +105,9 @@
           data-url="{% url 'catalogo:api_cotizar' %}" novalidate>
       {% csrf_token %}
 
-      {% if producto.personalizable %}
+      {% if producto.es_calceta %}
+        {% include "catalogo/_personalizador_calceta.html" %}
+      {% elif producto.personalizable %}
         <!-- ===== Personalizador paso a paso (personalizador.js) ===== -->
         <div id="personalizador" data-total="{{ total_pasos }}">
 
@@ -323,7 +327,10 @@
 {% endblock %}
 
 {% block scripts %}
-{% if producto.personalizable %}
+{% if producto.es_calceta %}
+  <!-- Personalizador de calcetas: va antes del cotizador, como el simulador del moño -->
+  <script src="{% static 'js/calceta.js' %}?v={{ version_estaticos }}"></script>
+{% elif producto.personalizable %}
   <!-- El simulador va primero para escuchar el primer evento del cotizador -->
   <script src="{% static 'js/simulador.js' %}?v={{ version_estaticos }}"></script>
   <!-- Pasos, "Lo más vendido" y "Restablecer" -->

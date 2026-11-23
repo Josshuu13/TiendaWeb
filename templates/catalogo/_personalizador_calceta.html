@@ -1,0 +1,73 @@
+{% load moneda %}
+{% comment %}
+  Personalizador de calcetas: color de cada parte, diseño predefinido, posición, tamaño
+  y talla. Solo manda identificadores y números; el servidor valida todo y calcula el
+  precio (catalogo/cotizacion.py, _cotizar_calceta).
+{% endcomment %}
+<div id="personalizador-calceta">
+  {% for item in partes_calceta %}
+    {% with parte=item.parte %}
+    <fieldset class="opcion">
+      <legend class="opcion-lbl">{{ forloop.counter }}. {{ parte.nombre }}:
+        <span data-nombre-color="{{ parte.clave }}"></span></legend>
+      {% for grupo in item.grupos %}
+        <div class="grupo-colores">{{ grupo.nombre }}</div>
+        <div class="fila">
+          {% for color in grupo.colores %}
+            <input type="radio" class="btn-check" name="{{ parte.clave }}" value="{{ color.pk }}"
+                   id="{{ parte.clave }}-{{ color.pk }}" data-hex="{{ color.codigo_hex }}"
+                   {% if color.pk == parte.color_inicial_id %}checked data-inicial{% endif %}>
+            <label class="muestra" for="{{ parte.clave }}-{{ color.pk }}" title="{{ color.nombre }}"
+                   style="--c: {{ color.codigo_hex }}"><span class="visually-hidden">{{ color.nombre }}</span></label>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </fieldset>
+    {% endwith %}
+  {% endfor %}
+
+  <fieldset class="opcion">
+    <legend class="opcion-lbl">{{ partes_calceta|length|add:1 }}. Diseño</legend>
+    <div class="disenos-calceta">
+      <input type="radio" class="btn-check" name="diseno" value="" id="diseno-ninguno">
+      <label class="diseno-opcion" for="diseno-ninguno"><span class="diseno-vacio" aria-hidden="true"></span>Sin diseño</label>
+      {% for d in disenos_calceta %}
+        <input type="radio" class="btn-check" name="diseno" value="{{ d.clave }}" id="diseno-{{ d.clave }}"
+               {% if forloop.first %}checked{% endif %}>
+        <label class="diseno-opcion" for="diseno-{{ d.clave }}">
+          <img src="{{ d.url_imagen }}" alt="" width="44" height="44">
+          <span>{{ d.nombre }}{% if d.precio_extra %} <small>+{{ d.precio_extra|pesos }}</small>{% endif %}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset class="opcion" id="calceta-ajustes">
+    <legend class="opcion-lbl">{{ partes_calceta|length|add:2 }}. Posición y tamaño del diseño</legend>
+    <div class="ajuste">
+      <label for="calceta-x">Horizontal</label>
+      <input type="range" class="rango" id="calceta-x" name="x" min="0" max="100" step="1" value="50">
+      <output for="calceta-x" data-valor="x">50 %</output>
+    </div>
+    <div class="ajuste">
+      <label for="calceta-y">Vertical</label>
+      <input type="range" class="rango" id="calceta-y" name="y" min="0" max="100" step="1" value="35">
+      <output for="calceta-y" data-valor="y">35 %</output>
+    </div>
+    <div class="ajuste">
+      <label for="calceta-tamano">Tamaño</label>
+      <input type="range" class="rango" id="calceta-tamano" name="tamano" min="50" max="150" step="5" value="100">
+      <output for="calceta-tamano" data-valor="tamano">100 %</output>
+    </div>
+    <button type="button" class="btn btn-sm btn-suave" id="calceta-centrar">Centrar diseño</button>
+  </fieldset>
+
+  <div class="opcion">
+    <label class="opcion-lbl" for="calceta-talla">Talla</label>
+    <select id="calceta-talla" name="talla" class="selector">
+      {% for clave, nombre in tallas_calceta %}
+        <option value="{{ clave }}"{% if forloop.first %} selected{% endif %}>{{ nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>

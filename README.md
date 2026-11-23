@@ -24,7 +24,8 @@ Es una demostración académica: los pagos son de prueba y no se realizan ventas
 - **Cancelaciones y devoluciones** por solicitud, resueltas desde el admin.
 - **Panel de administración** en español (`/admin/`).
 - **Correos automáticos** al cambiar el estado del pedido.
-- 170 pruebas automáticas con pytest.
+- **Calcetas personalizables:** color, diseño, posición, tamaño y talla, con precio validado en el servidor.
+- 235 pruebas automáticas con pytest y 3 en navegador real con Playwright.
 
 La arquitectura, los diagramas y las decisiones técnicas están en [docs/arquitectura.md](docs/arquitectura.md).
 
@@ -67,6 +68,17 @@ en la terminal. Para usar Stripe, copia `.env.example` como `.env` y sigue [docs
 pytest
 ruff check .
 ```
+
+Pruebas en un navegador real (compra completa, cancelación y celular):
+
+```bash
+playwright install chromium
+pytest -m e2e
+GUARDAR_CAPTURAS=1 pytest -m e2e   # guarda capturas en docs/capturas/
+```
+
+Los resultados y los casos del anteproyecto que cubre cada prueba están en
+[docs/resultados-pruebas.md](docs/resultados-pruebas.md).
 
 GitHub Actions ejecuta esto en cada Pull Request, sobre PostgreSQL. La forma de trabajar en equipo está
 en [CONTRIBUTING.md](CONTRIBUTING.md).

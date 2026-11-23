@@ -24,7 +24,7 @@ from django.shortcuts import get_object_or_404, render
 from django.templatetags.static import static
 from django.views.decorators.http import require_POST
 
-from .cotizacion import ErrorCotizacion, cotizar
+from .cotizacion import TALLAS_CALCETA, ErrorCotizacion, cotizar
 from .entregas import texto_entrega
 from .models import Categoria, Color, Estampado, Producto, Temporada, Variante
 
@@ -175,7 +175,10 @@ def lista(request, slug=None):
     # "Diseña el tuyo" con ese producto, y abajo los diseños listos para usar.
     # Aquí no se muestra el filtro de color: el personalizable admite cualquier
     # color y los diseños listos ya traen sus colores en la foto.
-    personalizable = productos.filter(personalizable=True).first() if categoria else None
+    personalizable = (
+        productos.filter(personalizable=True, tipo_personalizacion=Producto.MONO).first()
+        if categoria else None
+    )
     colores_simulador = []
     if personalizable:
         filtros_color = []
@@ -378,7 +381,26 @@ def detalle(request, slug):
         "datos_estructurados": _datos_estructurados(request, producto),
     }
 
-    if producto.personalizable:
+    if producto.es_calceta:
+        # Personalizador de calcetas: colores por parte, diseños, posición, tamaño y talla.
+        partes = list(producto.partes.prefetch_related("colores").select_related("color_inicial"))
+        disenos = list(producto.disenos_calceta.filter(activo=True))
+        contexto["partes_calceta"] = [
+            {"parte": p, "grupos": _agrupar_colores(list(p.colores.all()))} for p in partes
+        ]
+        contexto["disenos_calceta"] = disenos
+        contexto["tallas_calceta"] = [(t, dict(Variante.TALLAS)[t]) for t in TALLAS_CALCETA]
+        # Configuración que lee calceta.js desde la página.
+        contexto["config_calceta"] = {
+            "partes": [p.clave for p in partes],
+            "disenos": {d.clave: d.url_imagen for d in disenos},
+            # Capas sacadas de una foto real (static() da la URL correcta también en producción).
+            "capas": {
+                nombre: static(f"simulador/calceta/{nombre}.png")
+                for nombre in ("sombra", "cuerpo", "detalles")
+            },
+        }
+    elif producto.personalizable:
         # Partes en orden de dibujo (para el simulador)...
         partes = list(
             producto.partes.prefetch_related("colores").select_related("color_inicial")

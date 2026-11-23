@@ -9,7 +9,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (
-    Categoria, Color, Combinacion, CombinacionParte, Estampado, Parte, PiezaKit, Producto, Temporada,
+    Categoria, Color, Combinacion, DisenoCalceta, CombinacionParte, Estampado, Parte, PiezaKit, Producto, Temporada,
     Variante,
 )
 
@@ -53,7 +53,7 @@ class VarianteInline(admin.TabularInline):
 
 
 class ParteInline(admin.StackedInline):
-    """Partes del moño (capas) dentro del formulario del producto personalizable."""
+    """Partes del producto personalizable: capas del moño o partes de la calceta."""
 
     model = Parte
     extra = 0
@@ -74,7 +74,7 @@ class ProductoAdmin(admin.ModelAdmin):
         "nombre", "categoria", "precio_base", "dias_elaboracion",
         "personalizable", "existencias", "activo", "destacado",
     ]
-    list_filter = ["categoria", "personalizable", "activo"]
+    list_filter = ["categoria", "personalizable", "tipo_personalizacion", "activo"]
     list_editable = ["precio_base", "activo", "destacado"]
     search_fields = ["nombre", "descripcion"]
     prepopulated_fields = {"slug": ["nombre"]}
@@ -157,3 +157,22 @@ class TemporadaAdmin(admin.ModelAdmin):
         ]}),
         ("Productos", {"fields": ["productos"]}),
     ]
+
+
+
+@admin.register(DisenoCalceta)
+class DisenoCalcetaAdmin(admin.ModelAdmin):
+    """Diseños del personalizador de calcetas. Desactiva uno si se agota el material."""
+
+    list_display = ["vista", "nombre", "precio_extra", "activo", "orden"]
+    list_display_links = ["nombre"]
+    list_editable = ["precio_extra", "activo", "orden"]
+    prepopulated_fields = {"clave": ["nombre"]}
+    filter_horizontal = ["productos"]
+
+    @admin.display(description="")
+    def vista(self, obj):
+        return format_html(
+            '<img src="{}" style="width:36px;height:36px;padding:3px;background:#3a3a3c;border-radius:6px">',
+            obj.url_imagen,
+        )
