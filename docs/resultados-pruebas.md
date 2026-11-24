@@ -39,7 +39,7 @@ revisar el estilo del código, las migraciones y la configuración de seguridad 
 | Compra con las tres líneas de producto | `test_compra_completa_con_las_tres_lineas` | `capturas/05-carrito.png` |
 | Visualizar y conservar una personalización | `test_la_personalizacion_se_conserva_aunque_cambie_el_catalogo` | `capturas/03-simulador-mono.png`, `capturas/04-personalizador-calceta.png` |
 | Comprobar el importe calculado | `test_compra_crea_pedido_con_importes_del_servidor` | `capturas/06-finalizar-compra.png` |
-| Verificar el pago de prueba | `test_aviso_firmado_confirma_el_pago` (simulado) | Compra con Stripe en modo de pruebas (capturas `stripe-*.png`) |
+| Verificar el pago de prueba | `test_aviso_firmado_confirma_el_pago` (simulado) | Probado con avisos firmados simulados; la compra con una cuenta de Stripe no se realizó |
 | Consultar la fecha propuesta | `test_pedido_mixto_con_las_tres_lineas_toma_el_mas_tardado` | `capturas/07-pedido-confirmado.png` |
 | Registrar una solicitud de cancelación o devolución | `test_cancelacion_solicitada_y_aprobada_en_el_admin` | `capturas/08-admin-solicitudes.png`, `capturas/09-pedido-cancelado.png` |
 | La administración refleja estado y disponibilidad | `test_admin_cambia_estado_y_captura_envio`, `test_cancelacion_aprobada_repone_existencias` | `capturas/09-pedido-cancelado.png` |
